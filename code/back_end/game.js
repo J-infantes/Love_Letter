@@ -13,10 +13,11 @@ class card {
     activate(player_played,player_attacked){
         switch (this.#_type) {
             case 0:
-                player_played.discard(this);
+                player_played.delete(this);
                 player_played.equiped_card.push(this);
                 return true
             case 1:
+                player_played.discard(this);
                 guess =0;
                 if(player_attacked.currentcard[0].type() == guess){
                     player_attacked.iseliminated = true
@@ -25,10 +26,12 @@ class card {
                 return false
                 
             case 2:
+                player_played.discard(this);
                 print(player_attacked.currentcard[0].type())
                 
                 break;
             case 3:
+                player_played.discard(this);
                 if(player_played.currentcard[0].type() > player_attacked.currentcard[0].type()){
                     player_attacked.iseliminated = true
                 }
@@ -39,15 +42,21 @@ class card {
                 
                 break;
             case 4:
+                player_played.delete(this);
                 player_played.equiped_card.push(this);
                 
                 break;
             case 5:
+                player_played.discard(this);
                 player_attacked.discard();
+                if(player_attacked.iseliminated){
+                    break;
+                }
                 player_attacked.draw();
                 
                 break;
             case 6:
+                player_played.discard(this);
                 player_played.draw();
                 player_played.draw();
                 player_played.putback();
@@ -55,16 +64,19 @@ class card {
                 
                 break;
             case 7:
+                player_played.discard(this);
                 temp = player_attacked.currentcard[0];
                 player_attacked.currentcard[0] = player_played.currentcard[0];
                 player_played.currentcard[0] = temp;
                 
                 break;
             case 8:
+                player_played.discard(this);
                 
                 break;
             case 9:
-                player_played.iseliminated = true;
+                player_played.discard(this);
+                
                 
                 break;
             default:
@@ -99,6 +111,10 @@ class player {
         //discard a card
         if(card == null){
             card = this.#current_card[0];
+            if(card.type == 9){
+                this.iseliminated = true;
+            }
+            this.discard_pile.add(card);
             this.#current_card.shift();
 
         }
@@ -106,6 +122,11 @@ class player {
             let index = this.#current_card.indexOf(card);
             if(index > -1){
                 this.#current_card.splice(index,1);
+                if(card.type == 9){
+                    this.iseliminated = true;
+                }
+                this.discard_pile.add(card);
+
             }
         }
         
@@ -113,6 +134,13 @@ class player {
     putback(){
         //put back a card at end of deck
         this.deck.putback(this.#current_card[0]);
+        this.#current_card.shift();
+    }
+    delete(card){
+        let index = this.#current_card.indexOf(card);
+        if(index > -1){
+            this.#current_card.splice(index,1);
+        }
     }
 
 }
@@ -169,7 +197,7 @@ class game {
 
     start(){
         //game loop
-        while(this.#players.filter(p => !p.iseliminated).length > 1){
+        while(this.#players.filter(p => !p.iseliminated).length > 1 || this.#deck.length > 0){
             for(let i=0;i<this.#players.length;i++){
                 if(this.#players[i].iseliminated){
                     continue;
@@ -183,10 +211,24 @@ class game {
                 }
                 let attacked_player = this.#players[attacked_player_index];
                 played_card.activate(this.#players[i],attacked_player);
-                this.#players[i].discard();
+                
             }
         }
-        let winner = this.#players.find(p => !p.iseliminated);
+        nbplayeralive=0;
+        this.#players.forEach(element => {
+            if(!element.iseliminated){
+                nbplayeralive++;
+            }
+            
+        });
+        if(nbplayeralive>1){
+            winner = this.#players.reduce((prev, current) => (prev.currentcard[0].type > current.currentcard[0].type) ? prev : current);
+        }
+        else
+        {
+            winner = this.#players.find(p => !p.iseliminated);
+        }
+        
         print("Player "+this.#players.indexOf(winner)+" wins!");
 
     }

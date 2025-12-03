@@ -16,7 +16,7 @@ Le gagnant obtient un jeton faveur, et une nouvelle partie recommence jusqu'à c
 #
   
 Maëlle Mevel s'occupera du design HTML/CSS.  
-Maxime Ducandas s'occupera du déroulement de la partie.
+Maxime Ducandas s'occupera du déroulement de la partie.  
 Julia Infantes s'occupera de la programmation des IA joueurs.
 
 #

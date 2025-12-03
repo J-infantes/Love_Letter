@@ -91,6 +91,7 @@ class card {
 
 class player {
     iseliminated = false
+    points = 0
     #current_card = []
     equiped_card = []
     deck = null

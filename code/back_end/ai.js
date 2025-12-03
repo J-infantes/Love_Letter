@@ -113,27 +113,64 @@ function chancelier(card1, card2, card3){
     }
 }
 
-function attacksimple(joueurs){
-    return getRandomInt(joueurs.length);
+function attacksimple(joueurs, me){
+    i = getRandomInt(joueurs.length);
+    protec = false;
+    while (joueurs[i] == me || protec == true){
+        protec = false;
+        i = getRandomInt(joueurs.length);
+        for (let i = 0; i < joueurs[i].equiped_card.length; i++){
+            if (joueurs[i].equiped_card.type() == 4){
+                protec = true;
+            }
+        }
+    }
+    return joueurs[i];
 }
 
 function guardsimple(){
     r = 1;
     while (r == 1){
-        r = getRandomInt(10)
+        r = getRandomInt(10);
     }
     return r;
 }
 
-//A MODIFIER
-function attackdifficult(joueurs){
-    return getRandomInt(joueurs.length);
+function attackdifficult(joueurs, me){
+    cibles = []
+    for (let j = 0; j < joueurs.length; j++){
+        for (let k = 0; k < joueurs[j].equiped_card.length; k++){
+            if (joueurs[j].equiped_card[k].type() == 0 && joueurs[j] != me){
+                cibles.push(joueurs[j]);
+            }
+        }
+        if (joueurs[j].points != 0 && joueurs[j] != me){
+            cibles.push(joueurs[j]);
+        }
+    }
+
+    if (cibles.length == 0){
+        cibles = joueurs
+    }
+
+    i = getRandomInt(cibles.length);
+    protec = false;
+    while (cibles[i] == me || protec == true){
+        protec = false;
+        i = getRandomInt(cibles.length);
+        for (let l = 0; l < cibles[i].equiped_card.length; l++){
+            if (cibles[i].equiped_card[l].type() == 4){
+                protec = true;
+            }
+        }
+    }
+    return cibles[i];
 }
 
 function guarddifficult(){
-    r = 1;
-    while (r == 1){
-        r = getRandomInt(10)
+    r = getRandomInt(cardsnotplayed.length);
+    while (cardsnotplayed[r] == 1){
+        r = getRandomInt(cardsnotplayed.length)
     }
-    return r;
+    return cardsnotplayed[r];
 }

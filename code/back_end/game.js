@@ -1,4 +1,4 @@
-
+import './ai.js';
 class card {
     #_type = 0;
     constructor(type) {
@@ -82,14 +82,11 @@ class card {
             default:
                 break;
         }
-
     }
-
-
-
 }
 
 class player {
+    points = 0
     iseliminated = false
     points = 0
     #current_card = []
@@ -183,54 +180,91 @@ class deck {
     putback(card){
         this.#cards.unshift(card);
     }
+    taille(){
+        return this.#cards.length;
+    }
 
 }
 
 class game {
     #players = []
     #deck = null
+    current_player=0;
+    discard_pile = new discard_pile();
     constructor(num_players){
         this.#deck = new deck();
         for(let i=0;i<num_players;i++){
             this.#players.push(new player(this.#deck));
         }
+        this.#players.forEach(element => {
+            element.draw();
+        });
     }
 
     start(){
         //game loop
         while(this.#players.filter(p => !p.iseliminated).length > 1 || this.#deck.length > 0){
-            for(let i=0;i<this.#players.length;i++){
-                if(this.#players[i].iseliminated){
+            for(this.current_player=0;this.current_player<this.#players.length;this.current_player++){
+                if(this.#players[this.current_player].iseliminated){
                     continue;
                 }
-                this.#players[i].draw();
+                this.#players[this.current_player].draw();
                 //player chooses a card to play
-                let played_card = this.#players[i].currentcard[0];
-                let attacked_player_index = (i+1)%this.#players.length;
+                let played_card = this.#players[this.current_player].currentcard[0];
+                let attacked_player_index = (this.current_player+1)%this.#players.length;
                 while(this.#players[attacked_player_index].iseliminated){
                     attacked_player_index = (attacked_player_index+1)%this.#players.length;
                 }
                 let attacked_player = this.#players[attacked_player_index];
-                played_card.activate(this.#players[i],attacked_player);
+                played_card.activate(this.#players[this.current_player],attacked_player);
                 
             }
         }
-        nbplayeralive=0;
+        //determine who gets a point
+        let winners = [];
         this.#players.forEach(element => {
             if(!element.iseliminated){
-                nbplayeralive++;
+                winners.push(element);
+            }});
+        max =-1;
+        for(let i=0;i<winners.length;i++){
+            if(winners[i].currentcard[0].type() > max){
+                max = winners[i].currentcard[0].type();
             }
-            
-        });
-        if(nbplayeralive>1){
-            winner = this.#players.reduce((prev, current) => (prev.currentcard[0].type > current.currentcard[0].type) ? prev : current);
+            winner = this.#players.indexOf(winners[i]);
         }
-        else
-        {
-            winner = this.#players.find(p => !p.iseliminated);
+        this.#players[winner].points += 1;
+
+        has_espionne = [];
+        this.#players.forEach(element => {
+            for(let i=0;i<element.equiped_card.length;i++){
+                if(element.equiped_card[i].type() == 0 && !element.iseliminated && has_espionne.includes(element) == false){
+                    has_espionne.push(element);
+                }
+            }
+        });
+        if(has_espionne.length == 1){
+            has_espionne[0].points += 1;
         }
         
-        print("Player "+this.#players.indexOf(winner)+" wins!");
+        this.#players.forEach(element => {
+            if(element.points >= 3){
+                print("Player "+this.#players.indexOf(element)+" wins the game!");
+                return;
+            }
+        });
+
+        this.new_round();
+    }
+
+    new_round(){
+        this.#players.forEach(element => {
+            element.iseliminated = false;});
+
+        this.#deck = new deck();
+        this.#players.forEach(element => {
+            element.draw();
+        });
 
     }
 
@@ -240,6 +274,24 @@ class game {
         for(let i=0;i<num_players;i++){
             this.#players.push(new player(this.#deck));
         }
+        this.#players.forEach(element => {
+            element.draw();
+        });
+    }
+
+    affichage_discard_last(){
+        return this.discard_pile.getlast().gettype();
+    }
+    current_player_chiffre(){
+        return this.current_player;
+    }
+
+    current_player_player(){
+        return this.#players[this.current_player];
+    }
+
+    nombre_de_cartes_dans_le_deck(){
+        return this.#deck.taille();
     }
 
 }
@@ -248,6 +300,9 @@ class discard_pile {
     #cards = []
     constructor(){
         this.#cards = []
+    }
+    getlast(){
+        return this.#cards[this.#cards.length - 1];
     }
     add(card){
         this.#cards.push(card);

@@ -76,6 +76,7 @@ class card {
                 break;
             case 9:
                 player_played.discard(this);
+                player_played.iseliminated = true;
                 
                 
                 break;

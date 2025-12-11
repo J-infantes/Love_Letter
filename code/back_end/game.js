@@ -1,4 +1,4 @@
-import './ai.js';
+import {iasimple,ia,iadifficult} from './ai.js';
 class card {
     #_type = 0;
     constructor(type) {
@@ -10,33 +10,29 @@ class card {
     }
 
 
-    activate(player_played,player_attacked){
+    activate(player_played,player_attacked,guess=0){
         switch (this.#_type) {
             case 0:
                 player_played.delete(this);
                 player_played.equiped_card.push(this);
-                return true
             case 1:
                 player_played.discard(this);
-                guess =0;
                 if(player_attacked.currentcard[0].type() == guess){
-                    player_attacked.iseliminated = true
-                    return true
+                    player_attacked.discard();
                 }
-                return false
                 
             case 2:
                 player_played.discard(this);
-                print(player_attacked.currentcard[0].type())
+                print(player_attacked.currentcard[0].type()) //TODO: print to the player / tell the AI
                 
                 break;
             case 3:
                 player_played.discard(this);
                 if(player_played.currentcard[0].type() > player_attacked.currentcard[0].type()){
-                    player_attacked.iseliminated = true
+                    player_attacked.discard();
                 }
                 else{
-                    player_played.iseliminated = true
+                    player_played.discard();
                 }
 
                 
@@ -59,8 +55,15 @@ class card {
                 player_played.discard(this);
                 player_played.draw();
                 player_played.draw();
-                player_played.putback();
-                player_played.putback();
+                if(player_played.currentcard.length == 1){
+                    player_played.putback();
+                }
+                else { //TODO : make AI choose which card to put back / ask player
+                    player_played.putback();
+                    player_played.putback();
+                }
+                
+                
                 
                 break;
             case 7:
@@ -76,7 +79,6 @@ class card {
                 break;
             case 9:
                 player_played.discard(this);
-                player_played.iseliminated = true;
                 
                 
                 break;
@@ -87,7 +89,6 @@ class card {
 }
 
 class player {
-    points = 0
     iseliminated = false
     points = 0
     #current_card = []
@@ -128,12 +129,24 @@ class player {
 
             }
         }
+        if(this.#current_card.length == 0){
+            this.iseliminated = true;
+        }
         
     }
-    putback(){
+    putback(card = null){
         //put back a card at end of deck
-        this.deck.putback(this.#current_card[0]);
-        this.#current_card.shift();
+        let index = this.#current_card.indexOf(card);
+            if(index > -1){
+                this.#current_card.splice(index,1);
+                if(card.type == 9){
+                    this.iseliminated = true;
+                }
+                this.deck.putback(card);
+            }
+        if (this.#current_card.length == 0){
+            this.iseliminated = true;
+        }
     }
     delete(card){
         let index = this.#current_card.indexOf(card);
@@ -194,8 +207,11 @@ class game {
     discard_pile = new discard_pile();
     constructor(num_players){
         this.#deck = new deck();
-        for(let i=0;i<num_players;i++){
-            this.#players.push(new player(this.#deck));
+        //TODO: make some players AIs
+        this.#players.push(new player(this.#deck));
+        for(let i=1;i<num_players;i++){
+            this.#players.push(new iasimple(this.#deck,this.discard_pile));
+            
         }
         this.#players.forEach(element => {
             element.draw();
@@ -205,19 +221,32 @@ class game {
     start(){
         //game loop
         while(this.#players.filter(p => !p.iseliminated).length > 1 || this.#deck.length > 0){
+
             for(this.current_player=0;this.current_player<this.#players.length;this.current_player++){
+
                 if(this.#players[this.current_player].iseliminated){
                     continue;
                 }
+                
+
                 this.#players[this.current_player].draw();
                 //player chooses a card to play
+                //TODO: make AI choose which card to play / ask player
+                //TODO: tell the AIs the card that was just played
                 let played_card = this.#players[this.current_player].currentcard[0];
+                //TODO: make AI choose which player to attack / ask player
                 let attacked_player_index = (this.current_player+1)%this.#players.length;
                 while(this.#players[attacked_player_index].iseliminated){
                     attacked_player_index = (attacked_player_index+1)%this.#players.length;
                 }
+
                 let attacked_player = this.#players[attacked_player_index];
+
                 played_card.activate(this.#players[this.current_player],attacked_player);
+
+                if(this.#deck.taille() == 0){
+                    break;
+                }
                 
             }
         }
@@ -250,12 +279,17 @@ class game {
         
         this.#players.forEach(element => {
             if(element.points >= 3){
-                print("Player "+this.#players.indexOf(element)+" wins the game!");
+                print("Player "+this.#players.indexOf(element)+" wins the game!"); //TODO: end the game with win
+                // TODO: restart or end the game
+                // TODO: make the player loose
                 return;
+            }
+            else {
+                this.new_round(); // TODO: start a new round
             }
         });
 
-        this.new_round();
+        
     }
 
     new_round(){
@@ -272,6 +306,7 @@ class game {
     restart(){
         this.#players = []
         this.#deck = new deck();
+        //TODO: make some players AIs
         for(let i=0;i<num_players;i++){
             this.#players.push(new player(this.#deck));
         }
@@ -309,3 +344,5 @@ class discard_pile {
         this.#cards.push(card);
     }
 }
+
+export {game,player,deck,card,discard_pile};

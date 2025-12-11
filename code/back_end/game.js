@@ -27,6 +27,7 @@ class card {
                 //prêtre
                 player_played.discard(this);
                 print(player_attacked.currentcard[0].type()) //TODO: print to the player / tell the AI
+                //call RetourPrêtre(player_attacked.currentcard[0].type()) pour AI
                 
                 break;
             case 3:
@@ -35,7 +36,7 @@ class card {
                 if(player_played.currentcard[0].type() > player_attacked.currentcard[0].type()){
                     player_attacked.discard();
                 }
-                else{
+                else if(player_played.currentcard[0].type() < player_attacked.currentcard[0].type()){
                     player_played.discard();
                 }
 

@@ -13,20 +13,24 @@ class card {
     activate(player_played,player_attacked,guess=0){
         switch (this.#_type) {
             case 0:
+                //espionne
                 player_played.delete(this);
                 player_played.equiped_card.push(this);
             case 1:
+                //garde
                 player_played.discard(this);
                 if(player_attacked.currentcard[0].type() == guess){
                     player_attacked.discard();
                 }
                 
             case 2:
+                //prêtre
                 player_played.discard(this);
                 print(player_attacked.currentcard[0].type()) //TODO: print to the player / tell the AI
                 
                 break;
             case 3:
+                //baron
                 player_played.discard(this);
                 if(player_played.currentcard[0].type() > player_attacked.currentcard[0].type()){
                     player_attacked.discard();
@@ -38,11 +42,13 @@ class card {
                 
                 break;
             case 4:
+                //servante
                 player_played.delete(this);
                 player_played.equiped_card.push(this);
                 
                 break;
             case 5:
+                //prince
                 player_played.discard(this);
                 player_attacked.discard();
                 if(player_attacked.iseliminated){
@@ -52,6 +58,7 @@ class card {
                 
                 break;
             case 6:
+                //chancelier
                 player_played.discard(this);
                 player_played.draw();
                 player_played.draw();
@@ -67,6 +74,7 @@ class card {
                 
                 break;
             case 7:
+                //roi
                 player_played.discard(this);
                 temp = player_attacked.currentcard[0];
                 player_attacked.currentcard[0] = player_played.currentcard[0];
@@ -74,10 +82,12 @@ class card {
                 
                 break;
             case 8:
+                //comtesse
                 player_played.discard(this);
                 
                 break;
             case 9:
+                //princesse
                 player_played.discard(this);
                 
                 
@@ -95,11 +105,24 @@ class player {
     equiped_card = []
     deck = null
     discard_pile = null
+
     constructor(deck,discard_pile){
         this.#current_card = deck.draw();
         this.deck = deck;
         this.discard_pile = discard_pile;
     }
+
+    servante(){
+        //discard servante to stop effect
+        for(let i=0;i<this.equiped_card.length;i++){
+            if(this.equiped_card[i].type == 4){
+                this.discard_pile.add(this.equiped_card[i]);
+                this.equiped_card.splice(i,1);
+                break;
+            }
+        }
+    } 
+
     get currentcard(){
         return this.#current_card;
     }
@@ -129,6 +152,7 @@ class player {
 
             }
         }
+        //check if player has no cards left
         if(this.#current_card.length == 0){
             this.iseliminated = true;
         }
@@ -144,11 +168,13 @@ class player {
                 }
                 this.deck.putback(card);
             }
+            //check if player has no cards left
         if (this.#current_card.length == 0){
             this.iseliminated = true;
         }
     }
     delete(card){
+        //remove a card from current cards without discarding
         let index = this.#current_card.indexOf(card);
         if(index > -1){
             this.#current_card.splice(index,1);
@@ -205,17 +231,21 @@ class game {
     #deck = null
     current_player=0;
     discard_pile = new discard_pile();
-    constructor(num_players){
+    difficulty = 0;
+
+    constructor(num_players,difficulty = 0){
         this.#deck = new deck();
-        //TODO: make some players AIs
+        //add players
         this.#players.push(new player(this.#deck));
         for(let i=1;i<num_players;i++){
-            this.#players.push(new iasimple(this.#deck,this.discard_pile));
-            
+            if(difficulty == 0){
+                this.#players.push(new iasimple(this.#deck,this.discard_pile));
+            }
+            else if(difficulty == 1){
+                this.#players.push(new iadifficult(this.#deck,this.discard_pile));
+            }
         }
-        this.#players.forEach(element => {
-            element.draw();
-        });
+
     }
 
     start(){
@@ -223,27 +253,43 @@ class game {
         while(this.#players.filter(p => !p.iseliminated).length > 1 || this.#deck.length > 0){
 
             for(this.current_player=0;this.current_player<this.#players.length;this.current_player++){
-
+                
+                //skip eliminated players
                 if(this.#players[this.current_player].iseliminated){
                     continue;
+                }
+                
+                // check if player has a servante to discard
+                if(this.#players[this.current_player].equiped_card.some(card => card.type == 4)){
+                    //servante effect
+                    this.#players[this.current_player].servante();
                 }
                 
 
                 this.#players[this.current_player].draw();
                 //player chooses a card to play
                 //TODO: make AI choose which card to play / ask player
-                //TODO: tell the AIs the card that was just played
                 let played_card = this.#players[this.current_player].currentcard[0];
+
+                // Update AIs about played card
+                this.#players.forEach(element => {
+                    if(element instanceof ia){
+                        element.update(played_card,this.current_player);
+                    }
+                });
+
                 //TODO: make AI choose which player to attack / ask player
                 let attacked_player_index = (this.current_player+1)%this.#players.length;
                 while(this.#players[attacked_player_index].iseliminated){
                     attacked_player_index = (attacked_player_index+1)%this.#players.length;
                 }
-
+                
                 let attacked_player = this.#players[attacked_player_index];
-
+                
+                //activate card effect
                 played_card.activate(this.#players[this.current_player],attacked_player);
 
+                //check if deck is empty
                 if(this.#deck.taille() == 0){
                     break;
                 }
@@ -277,6 +323,7 @@ class game {
             has_espionne[0].points += 1;
         }
         
+        //check if someone has won
         this.#players.forEach(element => {
             if(element.points >= 3){
                 print("Player "+this.#players.indexOf(element)+" wins the game!"); //TODO: end the game with win
@@ -293,10 +340,12 @@ class game {
     }
 
     new_round(){
+        //reset players
         this.#players.forEach(element => {
             element.iseliminated = false;});
-
+        //reset deck
         this.#deck = new deck();
+        //initial draw
         this.#players.forEach(element => {
             element.draw();
         });
@@ -304,11 +353,17 @@ class game {
     }
 
     restart(){
+        //reset everything
         this.#players = []
         this.#deck = new deck();
-        //TODO: make some players AIs
-        for(let i=0;i<num_players;i++){
-            this.#players.push(new player(this.#deck));
+        this.#players.push(new player(this.#deck));
+        for(let i=1;i<num_players;i++){
+            if(difficulty == 0){
+                this.#players.push(new iasimple(this.#deck,this.discard_pile));
+            }
+            else if(difficulty == 1){
+                this.#players.push(new iadifficult(this.#deck,this.discard_pile));
+            }
         }
         this.#players.forEach(element => {
             element.draw();
@@ -316,17 +371,21 @@ class game {
     }
 
     affichage_discard_last(){
+        //show last card in discard pile
         return this.discard_pile.getlast().gettype();
     }
     current_player_chiffre(){
+        //return current player index
         return this.current_player;
     }
 
     current_player_player(){
+        //return current player object
         return this.#players[this.current_player];
     }
 
     nombre_de_cartes_dans_le_deck(){
+        //return number of cards in deck
         return this.#deck.taille();
     }
 
@@ -338,9 +397,11 @@ class discard_pile {
         this.#cards = []
     }
     getlast(){
+        //return last card in discard pile
         return this.#cards[this.#cards.length - 1];
     }
     add(card){
+        //add card to discard pile
         this.#cards.push(card);
     }
 }

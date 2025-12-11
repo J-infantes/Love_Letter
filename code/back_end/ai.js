@@ -1,10 +1,7 @@
 import "./game.js";
 
-//A CODER : se souvenir de la carte pretre
-//A CODER : se souvenir de l'échange roi
-//A CODER : s'autodétruire (prince)
+//A CODER : se souvenir de PR
 //A CODER : se souvenir des guess gardes (autres joueurs)
-//A CODER : se souvenir des denières cartes (chancelier) 
 
 function getRandomInt(max) {
         max = Math.floor(max);
@@ -15,7 +12,7 @@ class ia extends player {
     cardsnotplayed = [0,0,1,1,1,1,1,1,2,2,3,3,4,4,5,5,6,6,7,8,9];
     remindC = null;
     remindG = [];
-    remindP = [];
+    remindPR = [];
 
     update(cardplayed, joueur){
         typeplayed = cardplayed.type();
@@ -32,15 +29,32 @@ class ia extends player {
                 this.remindG.splice(j, 1);
             }
         }
-        for (let j = 0; j < this.remindP.length; j++){
-            if (this.remindP[j][0] == joueur){
-                this.remindP.splice(j, 1);
+        for (let j = 0; j < this.remindPR.length; j++){
+            if (this.remindPR[j][0] == joueur && this.remindPR[j][1] == cardplayed.type()){
+                this.remindPR.splice(j, 1);
+            }
+        }
+        if (this.remindC != null){
+            if (cardplayed.type() == 6 && joueur != me){
+                this.remindC.push = [10];
+            }
+            if (super.deck.taille() == 3 && this.remindC.length == 2){
+                this.remindPR.push = [joueur, this.remindC[1][0]];
+            }
+            if (super.deck.taille() == 2 && this.remindC.length == 2){
+                this.remindPR.push = [joueur, this.remindC[1][1]];
+            }
+            if (super.deck.taille() == 1 && this.remindC.length == 1){
+                this.remindPR.push = [joueur, this.remindC[0][0]];
+            }
+            if (super.deck.taille() == 0 && this.remindC.length == 1){
+                this.remindPR.push = [joueur, this.remindC[0][1]];
             }
         }
     }
 
     retourpretre(typecard){
-        this.remindP[-1][1] = typecard;
+        this.remindPR[-1][1] = typecard;
     }
 
     play(){
@@ -52,7 +66,7 @@ class ia extends player {
         }
 
         //Comtesse
-        if (card1.type() == 8){
+        else if (card1.type() == 8){
             if (card2.type() == 5 || card2.type() == 7 || card2.type() == 9){
                 return card1;
             }
@@ -62,7 +76,7 @@ class ia extends player {
         }
 
         //Roi
-        if (card1.type() == 7){
+        else if (card1.type() == 7){
             if (card2.type() == 9){
                 return card1;
             }
@@ -72,8 +86,8 @@ class ia extends player {
         }
 
         //Chancelier
-        if (card1.type() == 6){
-            if (card2.type() == 0 || card2.type() == 3 || card2.type() == 4 || deck.taille() <= 1){
+        else if (card1.type() == 6){
+            if (card2.type() == 0 || card2.type() == 3 || card2.type() == 4 || super.deck.taille() <= 1){
                 return card2;
             }
             else{
@@ -82,8 +96,8 @@ class ia extends player {
         }
 
         //Prince
-        if (card1.type() == 5){
-            if (card2.type() == 7 || card2.type() == 9){
+        else if (card1.type() == 5){
+            if ((card2.type() == 7 || card2.type() == 9) && super.deck.taille() != 0){
                 return card1;
             }
             else{
@@ -92,12 +106,12 @@ class ia extends player {
         }
 
         //Servante
-        if (card1.type() == 4){
+        else if (card1.type() == 4){
             return card1;
         }
 
         //Baron
-        if (card1.type() == 3){
+        else if (card1.type() == 3){
             if (card2.type() == 0 || card2.type() == 1 || card2.type() == 2 || card2.type() == 4){
                 return card2;
             }
@@ -107,7 +121,7 @@ class ia extends player {
         }
 
         //Pretre
-        if (card1.type() == 2){
+        else if (card1.type() == 2){
             if (card2.type() == 0 || card2.type() == 4 || card2.type() == 6){
                 return card2;
             }
@@ -117,7 +131,7 @@ class ia extends player {
         }
 
         //Garde
-        if (card1.type() == 1){
+        else if (card1.type() == 1){
             if (card2.type() == 0 || card2.type() == 2 || card2.type() == 4 || card2.type() == 6){
                 return card2;
             }
@@ -127,7 +141,7 @@ class ia extends player {
         }
 
         //Espionne
-        if (card1.type() == 0){
+        else if (card1.type() == 0){
             if (card2.type() == 4){
                 return card2;
             }
@@ -181,17 +195,23 @@ class iasimple extends ia {
 
     //En cas de choix du chancelier, on prend la carte la plus haute ou l'espionne, mais aucune n'a priorité sur l'autre.
     chancelier(){
-        card1 = super.currentcard()[0];
-        card2 = super.currentcard()[1];
-        card3 = super.currentcard()[2];
-        if (card1.type() == 0 || card1.type() >= card2.type() && card1.type() >= card3.type()){
-            return [card2, card3];
+        if (super.currentcard().length == 3){
+            card1 = super.currentcard()[0];
+            card2 = super.currentcard()[1];
+            card3 = super.currentcard()[2];
+            if (card1.type() == 0 || card1.type() >= card2.type() && card1.type() >= card3.type()){
+                return [card2, card3];
+            }
+            else if (card2.type() == 0 || card2.type() >= card1.type() && card2.type() >= card3.type()){
+                return [card1, card3];
+            }
+            else if (card3.type() == 0 || card3.type() >= card1.type() && card3.type() >= card2.type()){
+                return [card1, card2];
+            }
         }
-        if (card2.type() == 0 || card2.type() >= card1.type() && card2.type() >= card3.type()){
-            return [card1, card3];
-        }
-        if (card3.type() == 0 || card3.type() >= card1.type() && card3.type() >= card2.type()){
-            return [card1, card2];
+        else {
+            //L'IA vient de s'autodétruire
+            return super.currentcard();
         }
     }
 }
@@ -199,7 +219,8 @@ class iasimple extends ia {
 class iadifficult extends ia {
 
     roi(joueurs){
-        return this.attack(joueurs);
+        this.remindPR.push = [this.attack(joueurs), super.currentcard()[0].type()];
+        return this.remindPR[-1][0];
     }
     prince(joueurs){
         return this.attack(joueurs);
@@ -208,8 +229,8 @@ class iadifficult extends ia {
         return this.attack(joueurs);
     }
     pretre(joueurs){
-        this.remindP.push = [this.attack(joueurs), 10];
-        return this.remindP[-1];
+        this.remindPR.push = [this.attack(joueurs), 10];
+        return this.remindPR[-1][0];
     }
     garde(joueurs){
         this.remindG.push = [this.attack(joueurs), this.guard()];
@@ -217,6 +238,7 @@ class iadifficult extends ia {
     }
 
     attack(joueurs){
+        // A adapter aux cartes
         cibles = [];
         for (let j = 0; j < joueurs.length; j++){
             for (let k = 0; k < joueurs[j].equiped_card.length; k++){
@@ -299,63 +321,65 @@ class iadifficult extends ia {
 
     chancelier(){
         cards = super.currentcard();
-        chosen_card = null;
-        //Prise de la princesse
-        for (let i = 0; i < 3; i++){
-            if (cards[i] == 9){
-                chosen_card = cards[i];
-                cards.splice(i, 1);
-            }
-        }
-
-        //Sinon, prise de l'espionne
-        if (chosen_card == null){
+        if (cards.length == 3){
+            chosen_card = null;
+            //Prise de la princesse
             for (let i = 0; i < 3; i++){
-                if (cards[i] == 0){
+                if (cards[i] == 9){
                     chosen_card = cards[i];
                     cards.splice(i, 1);
                 }
             }
-        }
 
-        //Sinon, prise de la comtesse
-        if (chosen_card == null){
-            for (let i = 0; i < 3; i++){
-                if (cards[i] == 8){
-                    chosen_card = cards[i];
-                    cards.splice(i, 1);
+            //Sinon, prise de l'espionne
+            if (chosen_card == null){
+                for (let i = 0; i < 3; i++){
+                    if (cards[i] == 0){
+                        chosen_card = cards[i];
+                        cards.splice(i, 1);
+                    }
                 }
             }
-        }
 
-        //Sinon, prise du roi
-        if (chosen_card == null){
-            for (let i = 0; i < 3; i++){
-                if (cards[i] == 7){
-                    chosen_card = cards[i];
-                    cards.splice(i, 1);
+            //Sinon, prise de la comtesse
+            if (chosen_card == null){
+                for (let i = 0; i < 3; i++){
+                    if (cards[i] == 8){
+                        chosen_card = cards[i];
+                        cards.splice(i, 1);
+                    }
                 }
             }
+
+            //Sinon, prise du roi
+            if (chosen_card == null){
+                for (let i = 0; i < 3; i++){
+                    if (cards[i] == 7){
+                        chosen_card = cards[i];
+                        cards.splice(i, 1);
+                    }
+                }
+            }
+            
+            //Sinon, prise de la carte la plus haute
+            if (chosen_card == null){
+                if (cards[0].type() >= cards[1].type() && cards[0].type() >= cards[2].type()){
+                    chosen_card = cards[0];
+                    cards.splice(0, 1);
+                }
+                else if (cards[1].type() >= cards[0].type() && cards[1].type() >= cards[2].type()){
+                    chosen_card = cards[1];
+                    cards.splice(1, 1);
+                }
+                else if (cards[2].type() >= cards[1].type() && cards[2].type() >= cards[0].type()){
+                    chosen_card = cards[2];
+                    cards.splice(2, 1);
+                }
+            }
+            
+            //Remise des cartes restantes
+            this.remindC = cards;
         }
-        
-        //Sinon, prise de la carte la plus haute
-        if (chosen_card == null){
-            if (cards[0].type() >= cards[1].type() && cards[0].type() >= cards[2].type()){
-                chosen_card = cards[0];
-                cards.splice(0, 1);
-            }
-            if (cards[1].type() >= cards[0].type() && cards[1].type() >= cards[2].type()){
-                chosen_card = cards[1];
-                cards.splice(1, 1);
-            }
-            if (cards[2].type() >= cards[1].type() && cards[2].type() >= cards[0].type()){
-                chosen_card = cards[2];
-                cards.splice(2, 1);
-            }
-        }
-        
-        //Remise des cartes restantes
-        remindC = cards;
         return cards;
     }
 }

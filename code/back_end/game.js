@@ -28,6 +28,9 @@ class card {
                 player_played.discard(this);
                 print(player_attacked.currentcard[0].type()) //TODO: print to the player / tell the AI
                 //call RetourPrêtre(player_attacked.currentcard[0].type()) pour AI
+                if (player_played instanceof ia){
+                    player_played.retour_pretre(player_attacked.currentcard[0].type());
+                }
                 
                 break;
             case 3:
@@ -61,15 +64,28 @@ class card {
             case 6:
                 //chancelier
                 player_played.discard(this);
-                player_played.draw();
-                player_played.draw();
+                if (player_played.deck.taille() > 1){
+                    player_played.draw();
+                    player_played.draw();
+                }
+                else if (player_played.deck.taille() == 1){
+                    player_played.draw();
+                }
+                
+
+
+
                 if(player_played.currentcard.length == 1){
                     player_played.putback();
                 }
-                else { //TODO : make AI choose which card to put back / ask player
-                    player_played.putback();
-                    player_played.putback();
+                else if (player_played instanceof ia){
+                    let cards = [];
+                    cards = player_played.chancelier();
+                    player_played.putback(cards[0]);
+                    player_played.putback(cards[1]);
+                    break;
                 }
+                //TODO: ask player which card to put back
                 
                 
                 
@@ -269,8 +285,14 @@ class game {
 
                 this.#players[this.current_player].draw();
                 //player chooses a card to play
-                //TODO: make AI choose which card to play / ask player
+                //TODO: ask player
+                if (this.#players[this.current_player] instanceof ia){
+                    let played_card = this.#players[this.current_player].play();
+                }
+                else{
+                    //TODO: ask player which card to play
                 let played_card = this.#players[this.current_player].currentcard[0];
+                }
 
                 // Update AIs about played card
                 this.#players.forEach(element => {
@@ -280,15 +302,31 @@ class game {
                 });
 
                 //TODO: make AI choose which player to attack / ask player
-                let attacked_player_index = (this.current_player+1)%this.#players.length;
-                while(this.#players[attacked_player_index].iseliminated){
-                    attacked_player_index = (attacked_player_index+1)%this.#players.length;
+                if (this.#players[this.current_player] instanceof ia){
+                    if([0,4,8,9,6].includes(played_card.type())){
+                        played_card.activate(this.#players[this.current_player],null);
+                    }
+                    else if(played_card.type() == 1){
+                        [target_player,guess] = this.#players[this.current_player].garde(this.#players);
+                        played_card.activate(this.#players[this.current_player],target_player,guess);
+                    }
+                    else if(played_card.type() == 2){
+                        target_player = this.#players[this.current_player].pretre(this.#players);
+                        played_card.activate(this.#players[this.current_player],target_player);
+                    }
+                    else if(played_card.type() == 3){
+                        target_player = this.#players[this.current_player].baron(this.#players);
+                        played_card.activate(this.#players[this.current_player],target_player);
+                    }
+                    else if(played_card.type() == 5){
+                        target_player = this.#players[this.current_player].prince(this.#players);
+                        played_card.activate(this.#players[this.current_player],target_player);
+                    }
+                    else if(played_card.type() == 7){
+                        target_player = this.#players[this.current_player].roi(this.#players);
+                        played_card.activate(this.#players[this.current_player],target_player);
+                    }
                 }
-                
-                let attacked_player = this.#players[attacked_player_index];
-                
-                //activate card effect
-                played_card.activate(this.#players[this.current_player],attacked_player);
 
                 //check if deck is empty
                 if(this.#deck.taille() == 0){

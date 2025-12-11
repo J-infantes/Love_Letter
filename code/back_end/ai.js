@@ -2,8 +2,9 @@ import "./game.js";
 
 //A CODER : se souvenir de la carte pretre
 //A CODER : se souvenir de l'échange roi
-//A CODER : s'autodétruire (chancelier et prince)
-//A CODER : se souvenir des guess gardes
+//A CODER : s'autodétruire (prince)
+//A CODER : se souvenir des guess gardes (autres joueurs)
+//A CODER : se souvenir des denières cartes (chancelier) 
 
 function getRandomInt(max) {
         max = Math.floor(max);
@@ -12,8 +13,11 @@ function getRandomInt(max) {
 
 class ia extends player {
     cardsnotplayed = [0,0,1,1,1,1,1,1,2,2,3,3,4,4,5,5,6,6,7,8,9];
+    remindC = null;
+    remindG = [];
+    remindP = [];
 
-    update(cardplayed){
+    update(cardplayed, joueur){
         typeplayed = cardplayed.type();
         suppressed = false;
         let i = 0;
@@ -23,6 +27,20 @@ class ia extends player {
                 suppressed = true;
             }
         }
+        for (let j = 0; j < this.remindG.length; j++){
+            if (this.remindG[j][0] == joueur){
+                this.remindG.splice(j, 1);
+            }
+        }
+        for (let j = 0; j < this.remindP.length; j++){
+            if (this.remindP[j][0] == joueur){
+                this.remindP.splice(j, 1);
+            }
+        }
+    }
+
+    retourpretre(typecard){
+        this.remindP[-1][1] = typecard;
     }
 
     play(){
@@ -122,6 +140,22 @@ class ia extends player {
 
 class iasimple extends ia {
 
+    roi(joueurs){
+        return this.attack(joueurs);
+    }
+    prince(joueurs){
+        return this.attack(joueurs);
+    }
+    baron(joueurs){
+        return this.attack(joueurs);
+    }
+    pretre(joueurs){
+        return this.attack(joueurs);
+    }
+    garde(joueurs){
+        return [this.attack(joueurs), this.guard()];
+    }
+
     attack(joueurs){
         i = 0;
         protec = true;
@@ -163,6 +197,24 @@ class iasimple extends ia {
 }
 
 class iadifficult extends ia {
+
+    roi(joueurs){
+        return this.attack(joueurs);
+    }
+    prince(joueurs){
+        return this.attack(joueurs);
+    }
+    baron(joueurs){
+        return this.attack(joueurs);
+    }
+    pretre(joueurs){
+        this.remindP.push = [this.attack(joueurs), 10];
+        return this.remindP[-1];
+    }
+    garde(joueurs){
+        this.remindG.push = [this.attack(joueurs), this.guard()];
+        return this.remindG[-1];
+    }
 
     attack(joueurs){
         cibles = [];
@@ -302,8 +354,9 @@ class iadifficult extends ia {
             }
         }
         
-        //Choix de la remise des cartes
-
+        //Remise des cartes restantes
+        remindC = cards;
+        return cards;
     }
 }
 

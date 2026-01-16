@@ -21,12 +21,12 @@ Julia Infantes s'occupera de la programmation des IA joueurs.
 
 #
   
-# Technologies utilisées:
+Technologies utilisées:  
 HTML, CSS, javascript et la librairie TailWind pour le frontend.  
 Seulement du javascript pour le backend.
 #
 
-# Lien vers une démonstration de notre jeu:
+Lien vers une démonstration de notre jeu:  
 
 #
 

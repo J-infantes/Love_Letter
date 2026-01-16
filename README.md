@@ -22,7 +22,7 @@ Julia Infantes s'occupera de la programmation des IA joueurs.
 #
   
 # Technologies utilisées:
-HTML, CSS, javascript et la librairie TailWind pour le frontend.
+HTML, CSS, javascript et la librairie TailWind pour le frontend.  
 Seulement du javascript pour le backend.
 #
 
@@ -30,5 +30,5 @@ Seulement du javascript pour le backend.
 
 #
 
-Les bugs connus non résolus à ce jour sont:
+Les bugs connus non résolus à ce jour sont:  
 LE PRINCE!!!!

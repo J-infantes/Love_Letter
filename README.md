@@ -1,7 +1,7 @@
 # Love_Letter
 Projet HTML 5
 
-Nous allons programmer une version en ligne du jeu de société "Love Letter".
+Nous avons programmé une version en ligne du jeu de société "Love Letter".
 #
 # Règles du jeu :  
 Le jeu comporte 10 personnages représentés sur une vingtaine de cartes (les personnages se répètent au moins deux fois).  
@@ -22,8 +22,8 @@ Julia Infantes s'occupera de la programmation des IA joueurs.
 #
   
 Technologies utilisées:
-#
-#
+
+
 #
 
 Lien vers une démonstration de notre jeu:

@@ -1,387 +1,196 @@
-import "./game.js";
-
-//A CODER : se souvenir de PR
-//A CODER : se souvenir des guess gardes (autres joueurs)
+// ai.js
+import { Player } from './player.js';
 
 function getRandomInt(max) {
-        max = Math.floor(max);
-        return Math.floor(Math.random() * max);
-    }
+    return Math.floor(Math.random() * Math.floor(max));
+}
 
-class ia extends player {
-    cardsnotplayed = [0,0,1,1,1,1,1,1,2,2,3,3,4,4,5,5,6,6,7,8,9];
-    remindC = null;
+
+class IA extends Player {
+    cardsnotplayed = [0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9];
+    remindC = [];
     remindG = [];
     remindPR = [];
 
-    update(cardplayed, joueur){
-        typeplayed = cardplayed.type();
-        suppressed = false;
-        let i = 0;
-        while (suppressed == false){
-            if (this.cardsnotplayed[i] == typeplayed){
-                this.cardsnotplayed.splice(i, 1);
-                suppressed = true;
-            }
-        }
-        for (let j = 0; j < this.remindG.length; j++){
-            if (this.remindG[j][0] == joueur){
-                this.remindG.splice(j, 1);
-            }
-        }
-        for (let j = 0; j < this.remindPR.length; j++){
-            if (this.remindPR[j][0] == joueur && this.remindPR[j][1] == cardplayed.type()){
-                this.remindPR.splice(j, 1);
-            }
-        }
-        if (this.remindC != null){
-            if (cardplayed.type() == 6 && joueur != me){
-                this.remindC.push = [10];
-            }
-            if (super.deck.taille() == 3 && this.remindC.length == 2){
-                this.remindPR.push = [joueur, this.remindC[1][0]];
-            }
-            if (super.deck.taille() == 2 && this.remindC.length == 2){
-                this.remindPR.push = [joueur, this.remindC[1][1]];
-            }
-            if (super.deck.taille() == 1 && this.remindC.length == 1){
-                this.remindPR.push = [joueur, this.remindC[0][0]];
-            }
-            if (super.deck.taille() == 0 && this.remindC.length == 1){
-                this.remindPR.push = [joueur, this.remindC[0][1]];
-            }
+    update(cardplayed, joueur) {
+        const typeplayed = cardplayed.type;
+
+
+        const idx = this.cardsnotplayed.indexOf(typeplayed);
+        if (idx > -1) this.cardsnotplayed.splice(idx, 1);
+
+
+        this.remindG = this.remindG.filter(g => g[0] !== joueur);
+        this.remindPR = this.remindPR.filter(pr => pr[0] !== joueur || pr[1] !== typeplayed);
+
+
+        if (this.remindC.length > 0) {
+            const deckSize = this.deck.taille();
+            if (typeplayed === 6 && joueur !== this) this.remindC.push(10);
+            if (deckSize === 3 && this.remindC.length === 2) this.remindPR.push([joueur, this.remindC[1]]);
+            if (deckSize === 2 && this.remindC.length === 2) this.remindPR.push([joueur, this.remindC[1]]);
+            if (deckSize === 1 && this.remindC.length === 1) this.remindPR.push([joueur, this.remindC[0]]);
+            if (deckSize === 0 && this.remindC.length === 1) this.remindPR.push([joueur, this.remindC[0]]);
         }
     }
 
-    retourpretre(typecard){
-        this.remindPR[-1][1] = typecard;
+    retourpretre(typecard) {
+        if (this.remindPR.length > 0) this.remindPR[this.remindPR.length - 1][1] = typecard;
     }
 
-    play(){
-        card1 = super.currentcard()[0];
-        card2 = super.currentcard()[1];
-        //Princesse
-        if (card1.type() == 9){
-            return card2;
+    play() {
+        const cards = this.currentcard;
+        if (!cards[0]) {
+            console.warn("IA n'a pas de carte à jouer !");
+            return null;
         }
+        const card1 = cards[0];
+        const card2 = cards[1];
 
-        //Comtesse
-        else if (card1.type() == 8){
-            if (card2.type() == 5 || card2.type() == 7 || card2.type() == 9){
-                return card1;
-            }
-            else{
-                return card2;
-            }
-        }
+        // Princesse
+        if (card1.type === 9) return card2;
 
-        //Roi
-        else if (card1.type() == 7){
-            if (card2.type() == 9){
-                return card1;
-            }
-            else{
-                return card2;
-            }
-        }
+        // Comtesse
+        if (card1.type === 8 && [5, 7, 9].includes(card2.type)) return card1;
+        if (card1.type === 8) return card2;
 
-        //Chancelier
-        else if (card1.type() == 6){
-            if (card2.type() == 0 || card2.type() == 3 || card2.type() == 4 || super.deck.taille() <= 1){
-                return card2;
-            }
-            else{
-                return card1;
-            }
-        }
+        // Roi
+        if (card1.type === 7 && card2.type === 9) return card1;
+        if (card1.type === 7) return card2;
 
-        //Prince
-        else if (card1.type() == 5){
-            if ((card2.type() == 7 || card2.type() == 9) && super.deck.taille() != 0){
-                return card1;
-            }
-            else{
-                return card2;
-            }
-        }
+        // Chancelier
+        if (card1.type === 6 && ([0, 3, 4].includes(card2.type) || this.deck.taille() <= 1)) return card2;
+        if (card1.type === 6) return card1;
 
-        //Servante
-        else if (card1.type() == 4){
-            return card1;
-        }
+        // Prince
+        if (card1.type === 5 && [7, 9].includes(card2.type) && this.deck.taille() !== 0) return card1;
+        if (card1.type === 5) return card2;
 
-        //Baron
-        else if (card1.type() == 3){
-            if (card2.type() == 0 || card2.type() == 1 || card2.type() == 2 || card2.type() == 4){
-                return card2;
-            }
-            else{
-                return card1;
-            }
-        }
+        // Servante
+        if (card1.type === 4) return card1;
 
-        //Pretre
-        else if (card1.type() == 2){
-            if (card2.type() == 0 || card2.type() == 4 || card2.type() == 6){
-                return card2;
-            }
-            else{
-                return card1;
-            }
-        }
+        // Baron
+        if (card1.type === 3 && [0, 1, 2, 4].includes(card2.type)) return card2;
+        if (card1.type === 3) return card1;
 
-        //Garde
-        else if (card1.type() == 1){
-            if (card2.type() == 0 || card2.type() == 2 || card2.type() == 4 || card2.type() == 6){
-                return card2;
-            }
-            else{
-                return card1;
-            }
-        }
+        // Prêtre
+        if (card1.type === 2 && [0, 4, 6].includes(card2.type)) return card2;
+        if (card1.type === 2) return card1;
 
-        //Espionne
-        else if (card1.type() == 0){
-            if (card2.type() == 4){
-                return card2;
-            }
-            else{
-                return card1;
-            }
-        }
+        // Garde
+        if (card1.type === 1 && [0, 2, 4, 6].includes(card2.type)) return card2;
+        if (card1.type === 1) return card1;
+
+        // Espionne
+        if (card1.type === 0 && card2.type === 4) return card2;
+        return card1;
     }
 }
 
-class iasimple extends ia {
 
-    roi(joueurs){
-        return this.attack(joueurs);
-    }
-    prince(joueurs){
-        return this.attack(joueurs);
-    }
-    baron(joueurs){
-        return this.attack(joueurs);
-    }
-    pretre(joueurs){
-        return this.attack(joueurs);
-    }
-    garde(joueurs){
-        return [this.attack(joueurs), this.guard()];
-    }
+class IASimple extends IA {
+    roi(joueurs) { return this.attack(joueurs); }
+    prince(joueurs) { return this.attack(joueurs); }
+    baron(joueurs) { return this.attack(joueurs); }
+    pretre(joueurs) { return this.attack(joueurs); }
+    garde(joueurs) { return [this.attack(joueurs), this.guard()]; }
 
-    attack(joueurs){
-        i = 0;
-        protec = true;
-        while (joueurs[i] == this || protec == true){
-            protec = false;
-            i = getRandomInt(joueurs.length);
-            for (let j = 0; j < joueurs[i].equiped_card.length; j++){
-                if (joueurs[i].equiped_card[j].type() == 4){
-                    protec = true;
-                }
-            }
+    attack(joueurs) {
+        const ciblesValides = joueurs.filter(j =>
+            j !== this &&
+            !j.equiped_card.some(c => c.type === 4)
+        );
+
+
+        if (ciblesValides.length === 0) {
+            return null;
         }
-        return joueurs[i];
+
+        return ciblesValides[getRandomInt(ciblesValides.length)];
     }
 
-    guard(){
-        r = 1;
-        while (r == 1){
-            r = getRandomInt(10);
+
+    guard() {
+        let r = 1;
+        while (r === 1) r = getRandomInt(10);
+        return r;
+    }
+
+    chancelier() {
+        const cards = this.currentcard.slice();
+        if (cards.length !== 3) return cards;
+
+        const [c1, c2, c3] = cards;
+        if (c1.type === 0 || c1.type >= c2.type && c1.type >= c3.type) return [c2, c3];
+        if (c2.type === 0 || c2.type >= c1.type && c2.type >= c3.type) return [c1, c3];
+        if (c3.type === 0 || c3.type >= c1.type && c3.type >= c2.type) return [c1, c2];
+        return [c1, c2];
+    }
+}
+
+
+class IADifficult extends IA {
+    roi(joueurs) {
+        const cible = this.attack(joueurs);
+        this.remindPR.push([cible, this.currentcard[0].type]);
+        return cible;
+    }
+    prince(joueurs) { return this.attack(joueurs); }
+    baron(joueurs) { return this.attack(joueurs); }
+    pretre(joueurs) {
+        const cible = this.attack(joueurs);
+        this.remindPR.push([cible, 10]);
+        return cible;
+    }
+    garde(joueurs) {
+        const cible = this.attack(joueurs);
+        const guess = this.guard();
+        this.remindG.push([cible, guess]);
+        return [cible, guess];
+    }
+
+    attack(joueurs) {
+        let cibles = [];
+        for (const j of joueurs) {
+            if (j !== this && j.equiped_card.some(c => c.type === 0)) cibles.push(j);
+            else if (j !== this && j.points !== 0) cibles.push(j);
+        }
+        if (cibles.length === 0) cibles = joueurs;
+
+        let cible;
+        do {
+            cible = cibles[getRandomInt(cibles.length)];
+        } while (cible === this || cible.equiped_card.some(c => c.type === 4));
+
+        return cible;
+    }
+
+    guard() {
+        let guess = [...this.cardsnotplayed];
+        guess = guess.filter(g => g !== this.currentcard[0].type);
+        let onlyguards = guess.every(g => g === 1);
+        let r;
+        if (!onlyguards) {
+            do { r = guess[getRandomInt(guess.length)]; } while (r === 1);
+        } else {
+            do { r = getRandomInt(10); } while (r === 1);
         }
         return r;
     }
 
-    //En cas de choix du chancelier, on prend la carte la plus haute ou l'espionne, mais aucune n'a priorité sur l'autre.
-    chancelier(){
-        if (super.currentcard().length == 3){
-            card1 = super.currentcard()[0];
-            card2 = super.currentcard()[1];
-            card3 = super.currentcard()[2];
-            if (card1.type() == 0 || card1.type() >= card2.type() && card1.type() >= card3.type()){
-                return [card2, card3];
-            }
-            else if (card2.type() == 0 || card2.type() >= card1.type() && card2.type() >= card3.type()){
-                return [card1, card3];
-            }
-            else if (card3.type() == 0 || card3.type() >= card1.type() && card3.type() >= card2.type()){
-                return [card1, card2];
-            }
+    chancelier() {
+        const cards = [...this.currentcard];
+        if (cards.length !== 3) return cards;
+
+        let chosen = null;
+        for (const t of [9, 0, 8, 7]) {
+            const idx = cards.findIndex(c => c.type === t);
+            if (idx !== -1) { chosen = cards[idx]; cards.splice(idx, 1); break; }
         }
-        else {
-            //L'IA vient de s'autodétruire
-            return super.currentcard();
-        }
+
+        this.remindC = cards;
+        return [chosen, ...cards];
     }
 }
 
-class iadifficult extends ia {
-
-    roi(joueurs){
-        this.remindPR.push = [this.attack(joueurs), super.currentcard()[0].type()];
-        return this.remindPR[-1][0];
-    }
-    prince(joueurs){
-        return this.attack(joueurs);
-    }
-    baron(joueurs){
-        return this.attack(joueurs);
-    }
-    pretre(joueurs){
-        this.remindPR.push = [this.attack(joueurs), 10];
-        return this.remindPR[-1][0];
-    }
-    garde(joueurs){
-        this.remindG.push = [this.attack(joueurs), this.guard()];
-        return this.remindG[-1];
-    }
-
-    attack(joueurs){
-        // A adapter aux cartes
-        cibles = [];
-        for (let j = 0; j < joueurs.length; j++){
-            for (let k = 0; k < joueurs[j].equiped_card.length; k++){
-                if (joueurs[j].equiped_card[k].type() == 0 && joueurs[j] != this){
-                    cibles.push(joueurs[j]);
-                }
-            }
-            if (joueurs[j].points != 0 && joueurs[j] != this){
-                cibles.push(joueurs[j]);
-            }
-        }
-
-
-        if (cibles.length != 0){
-            for (let e = 0; e < cibles.length; e++){
-                servante = false;
-                for (let r = 0; r < joueurs[e].equiped_card.length; r++){
-                    if (joueurs[e].equiped_card[r].type() == 4){
-                        servante = true;
-                    }
-                }
-                if (servante == true){
-                    cibles.splice(e, 1);
-                }
-            }
-        }
-        if (cibles.length == 0){
-            cibles = joueurs;
-        }
-
-        i = 0;
-        protec = true;
-        while (cibles[i] == this || protec == true){
-            protec = false;
-            i = getRandomInt(cibles.length);
-            for (let l = 0; l < cibles[i].equiped_card.length; l++){
-                if (cibles[i].equiped_card[l].type() == 4){
-                    protec = true;
-                }
-            }
-        }
-        return cibles[i];
-    }
-
-    guard(){
-
-        guess = this.cardsnotplayed;
-        mycard = super.currentcard()[0];
-        suppressed = false;
-        let g = 0;
-        while (suppressed == false){
-            if (guess[g] == mycard){
-                guess.splice(g, 1);
-                suppressed = true;
-            }
-        }
-
-        onlyguards = true;
-        for (let i = 0; i < guess.length; i++){
-            if (guess[i]!=1){
-                onlyguards = false;
-            }
-        }
-
-        if (onlyguards == false){
-            r = getRandomInt(guess.length);
-            while (guess[r] == 1){
-                r = getRandomInt(guess.length)
-            }
-            return guess[r];
-        }
-        else {
-            r = 1;
-            while (r == 1){
-                r = getRandomInt(10);
-            }
-            return r;
-        }
-    }
-
-    chancelier(){
-        cards = super.currentcard();
-        if (cards.length == 3){
-            chosen_card = null;
-            //Prise de la princesse
-            for (let i = 0; i < 3; i++){
-                if (cards[i] == 9){
-                    chosen_card = cards[i];
-                    cards.splice(i, 1);
-                }
-            }
-
-            //Sinon, prise de l'espionne
-            if (chosen_card == null){
-                for (let i = 0; i < 3; i++){
-                    if (cards[i] == 0){
-                        chosen_card = cards[i];
-                        cards.splice(i, 1);
-                    }
-                }
-            }
-
-            //Sinon, prise de la comtesse
-            if (chosen_card == null){
-                for (let i = 0; i < 3; i++){
-                    if (cards[i] == 8){
-                        chosen_card = cards[i];
-                        cards.splice(i, 1);
-                    }
-                }
-            }
-
-            //Sinon, prise du roi
-            if (chosen_card == null){
-                for (let i = 0; i < 3; i++){
-                    if (cards[i] == 7){
-                        chosen_card = cards[i];
-                        cards.splice(i, 1);
-                    }
-                }
-            }
-            
-            //Sinon, prise de la carte la plus haute
-            if (chosen_card == null){
-                if (cards[0].type() >= cards[1].type() && cards[0].type() >= cards[2].type()){
-                    chosen_card = cards[0];
-                    cards.splice(0, 1);
-                }
-                else if (cards[1].type() >= cards[0].type() && cards[1].type() >= cards[2].type()){
-                    chosen_card = cards[1];
-                    cards.splice(1, 1);
-                }
-                else if (cards[2].type() >= cards[1].type() && cards[2].type() >= cards[0].type()){
-                    chosen_card = cards[2];
-                    cards.splice(2, 1);
-                }
-            }
-            
-            //Remise des cartes restantes
-            this.remindC = cards;
-        }
-        return cards;
-    }
-}
-
-export {ia, iasimple, iadifficult};
+export { IA, IASimple, IADifficult };

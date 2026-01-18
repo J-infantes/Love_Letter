@@ -1,448 +1,561 @@
-import {iasimple,ia,iadifficult} from './ai.js';
-class card {
-    #_type = 0;
-    constructor(type) {
-        this.#_type = type;
-    }
+// game.js
+import { Player, Deck, DiscardPile } from './player.js';
+import { IASimple, IADifficult } from './ai.js';
+import * as ui from './affichage.js';//+ rapide à écrire
+import * as ui_ia from './affichage_ia.js';
 
-    get type(){
-        return this.#_type;
-    }
-
-
-    activate(player_played,player_attacked,guess=0){
-        switch (this.#_type) {
-            case 0:
-                //espionne
-                player_played.delete(this);
-                player_played.equiped_card.push(this);
-            case 1:
-                //garde
-                player_played.discard(this);
-                if(player_attacked.currentcard[0].type() == guess){
-                    player_attacked.discard();
-                }
-                
-            case 2:
-                //prêtre
-                player_played.discard(this);
-                print(player_attacked.currentcard[0].type()) //TODO: print to the player / tell the AI
-                //call RetourPrêtre(player_attacked.currentcard[0].type()) pour AI
-                if (player_played instanceof ia){
-                    player_played.retour_pretre(player_attacked.currentcard[0].type());
-                }
-                
-                break;
-            case 3:
-                //baron
-                player_played.discard(this);
-                if(player_played.currentcard[0].type() > player_attacked.currentcard[0].type()){
-                    player_attacked.discard();
-                }
-                else if(player_played.currentcard[0].type() < player_attacked.currentcard[0].type()){
-                    player_played.discard();
-                }
-
-                
-                break;
-            case 4:
-                //servante
-                player_played.delete(this);
-                player_played.equiped_card.push(this);
-                
-                break;
-            case 5:
-                //prince
-                player_played.discard(this);
-                player_attacked.discard();
-                if(player_attacked.iseliminated){
-                    break;
-                }
-                player_attacked.draw();
-                
-                break;
-            case 6:
-                //chancelier
-                player_played.discard(this);
-                if (player_played.deck.taille() > 1){
-                    player_played.draw();
-                    player_played.draw();
-                }
-                else if (player_played.deck.taille() == 1){
-                    player_played.draw();
-                }
-                
-
-
-
-                if(player_played.currentcard.length == 1){
-                    player_played.putback();
-                }
-                else if (player_played instanceof ia){
-                    let cards = [];
-                    cards = player_played.chancelier();
-                    player_played.putback(cards[0]);
-                    player_played.putback(cards[1]);
-                    break;
-                }
-                //TODO: ask player which card to put back
-                
-                
-                
-                break;
-            case 7:
-                //roi
-                player_played.discard(this);
-                temp = player_attacked.currentcard[0];
-                player_attacked.currentcard[0] = player_played.currentcard[0];
-                player_played.currentcard[0] = temp;
-                
-                break;
-            case 8:
-                //comtesse
-                player_played.discard(this);
-                
-                break;
-            case 9:
-                //princesse
-                player_played.discard(this);
-                
-                
-                break;
-            default:
-                break;
-        }
-    }
-}
-
-class player {
-    iseliminated = false
-    points = 0
-    #current_card = []
-    equiped_card = []
-    deck = null
-    discard_pile = null
-
-    constructor(deck,discard_pile){
-        this.#current_card = deck.draw();
-        this.deck = deck;
-        this.discard_pile = discard_pile;
-    }
-
-    servante(){
-        //discard servante to stop effect
-        for(let i=0;i<this.equiped_card.length;i++){
-            if(this.equiped_card[i].type == 4){
-                this.discard_pile.add(this.equiped_card[i]);
-                this.equiped_card.splice(i,1);
-                break;
-            }
-        }
-    } 
-
-    get currentcard(){
-        return this.#current_card;
-    }
-    draw(){
-        //draw a card from deck
-        this.#current_card.push(this.deck.draw());
-    }
-    discard(card=null){
-        //discard a card
-        if(card == null){
-            card = this.#current_card[0];
-            if(card.type == 9){
-                this.iseliminated = true;
-            }
-            this.discard_pile.add(card);
-            this.#current_card.shift();
-
-        }
-        else{
-            let index = this.#current_card.indexOf(card);
-            if(index > -1){
-                this.#current_card.splice(index,1);
-                if(card.type == 9){
-                    this.iseliminated = true;
-                }
-                this.discard_pile.add(card);
-
-            }
-        }
-        //check if player has no cards left
-        if(this.#current_card.length == 0){
-            this.iseliminated = true;
-        }
-        
-    }
-    putback(card = null){
-        //put back a card at end of deck
-        let index = this.#current_card.indexOf(card);
-            if(index > -1){
-                this.#current_card.splice(index,1);
-                if(card.type == 9){
-                    this.iseliminated = true;
-                }
-                this.deck.putback(card);
-            }
-            //check if player has no cards left
-        if (this.#current_card.length == 0){
-            this.iseliminated = true;
-        }
-    }
-    delete(card){
-        //remove a card from current cards without discarding
-        let index = this.#current_card.indexOf(card);
-        if(index > -1){
-            this.#current_card.splice(index,1);
-        }
-    }
-
-}
-
-function print(data){
-    console.log(data)
-}
-
-class deck {
-    #cards = []
-    constructor(){
-        this.#cards.push(new card(0));
-        this.#cards.push(new card(0));
-        this.#cards.push(new card(1));
-        this.#cards.push(new card(1));
-        this.#cards.push(new card(1));
-        this.#cards.push(new card(1));
-        this.#cards.push(new card(1));
-        this.#cards.push(new card(1));
-        this.#cards.push(new card(2));
-        this.#cards.push(new card(2));
-        this.#cards.push(new card(3));
-        this.#cards.push(new card(3));
-        this.#cards.push(new card(4));
-        this.#cards.push(new card(4));
-        this.#cards.push(new card(5));
-        this.#cards.push(new card(5));
-        this.#cards.push(new card(6));
-        this.#cards.push(new card(6));
-        this.#cards.push(new card(7));
-        this.#cards.push(new card(8));
-        this.#cards.push(new card(9));
-        this.#cards = this.#cards.sort(() => Math.random() - 0.5);
-        this.draw();
-    }
-    draw(){
-        return this.#cards.pop();
-    }
-    putback(card){
-        this.#cards.unshift(card);
-    }
-    taille(){
-        return this.#cards.length;
-    }
-
-}
-
-class game {
-    #players = []
-    #deck = null
-    current_player=0;
-    discard_pile = new discard_pile();
+class Game {
+    #players = [];
+    #deck = null;
+    current_player = 0;
+    discard_pile = new DiscardPile();
     difficulty = 0;
 
-    constructor(num_players,difficulty = 0){
-        this.#deck = new deck();
-        //add players
-        this.#players.push(new player(this.#deck));
-        for(let i=1;i<num_players;i++){
-            if(difficulty == 0){
-                this.#players.push(new iasimple(this.#deck,this.discard_pile));
-            }
-            else if(difficulty == 1){
-                this.#players.push(new iadifficult(this.#deck,this.discard_pile));
-            }
+    constructor(num_players, difficulty = 0) {
+        this.#deck = new Deck();
+        this.difficulty = difficulty;
+        this.#players.push(new Player(this.#deck, this.discard_pile));
+        for (let i = 1; i < num_players; i++) {
+            if (difficulty === 0) this.#players.push(new IASimple(this.#deck, this.discard_pile));
+            else this.#players.push(new IADifficult(this.#deck, this.discard_pile));
         }
 
     }
 
-    start(){
-        //game loop
-        while(this.#players.filter(p => !p.iseliminated).length > 1 || this.#deck.length > 0){
+    new_round() {
+        ui.log("Nouvelle manche !");
 
-            for(this.current_player=0;this.current_player<this.#players.length;this.current_player++){
-                
-                //skip eliminated players
-                if(this.#players[this.current_player].iseliminated){
-                    continue;
-                }
-                
-                // check if player has a servante to discard
-                if(this.#players[this.current_player].equiped_card.some(card => card.type == 4)){
-                    //servante effect
-                    this.#players[this.current_player].servante();
-                }
-                
 
-                this.#players[this.current_player].draw();
-                //player chooses a card to play
-                //TODO: ask player
-                if (this.#players[this.current_player] instanceof ia){
-                    let played_card = this.#players[this.current_player].play();
-                }
-                else{
-                    //TODO: ask player which card to play
-                let played_card = this.#players[this.current_player].currentcard[0];
-                }
-
-                // Update AIs about played card
-                this.#players.forEach(element => {
-                    if(element instanceof ia){
-                        element.update(played_card,this.current_player);
-                    }
-                });
-
-                //TODO: make AI choose which player to attack / ask player
-                if (this.#players[this.current_player] instanceof ia){
-                    if([0,4,8,9,6].includes(played_card.type())){
-                        played_card.activate(this.#players[this.current_player],null);
-                    }
-                    else if(played_card.type() == 1){
-                        [target_player,guess] = this.#players[this.current_player].garde(this.#players);
-                        played_card.activate(this.#players[this.current_player],target_player,guess);
-                    }
-                    else if(played_card.type() == 2){
-                        target_player = this.#players[this.current_player].pretre(this.#players);
-                        played_card.activate(this.#players[this.current_player],target_player);
-                    }
-                    else if(played_card.type() == 3){
-                        target_player = this.#players[this.current_player].baron(this.#players);
-                        played_card.activate(this.#players[this.current_player],target_player);
-                    }
-                    else if(played_card.type() == 5){
-                        target_player = this.#players[this.current_player].prince(this.#players);
-                        played_card.activate(this.#players[this.current_player],target_player);
-                    }
-                    else if(played_card.type() == 7){
-                        target_player = this.#players[this.current_player].roi(this.#players);
-                        played_card.activate(this.#players[this.current_player],target_player);
-                    }
-                }
-
-                //check if deck is empty
-                if(this.#deck.taille() == 0){
-                    break;
-                }
-                
+        this.#players.forEach(player => {
+            while (player.currentcard.length) {
+                player.discard(player.currentcard.pop());
             }
-        }
-        //determine who gets a point
-        let winners = [];
-        this.#players.forEach(element => {
-            if(!element.iseliminated){
-                winners.push(element);
-            }});
-        max =-1;
-        for(let i=0;i<winners.length;i++){
-            if(winners[i].currentcard[0].type() > max){
-                max = winners[i].currentcard[0].type();
+            while (player.equiped_card.length) {
+                player.equiped_card.pop();
             }
-            winner = this.#players.indexOf(winners[i]);
-        }
-        this.#players[winner].points += 1;
-
-        has_espionne = [];
-        this.#players.forEach(element => {
-            for(let i=0;i<element.equiped_card.length;i++){
-                if(element.equiped_card[i].type() == 0 && !element.iseliminated && has_espionne.includes(element) == false){
-                    has_espionne.push(element);
-                }
-            }
+            player.iseliminated = false;
         });
-        if(has_espionne.length == 1){
-            has_espionne[0].points += 1;
+
+        this.#players.forEach((p, i) => {
+            if (i === 0) ui.retirerEspionneHumain(i);
+            ui.retirerServanteIA(i);
+            ui.retirerEspionneIA(i);
+        });
+
+        this.#deck = new Deck();
+
+        this.#players.forEach(player => {
+            const card = this.#deck.draw();
+            if (card) player.currentcard.push(card);
+        });
+
+
+        const human = this.#players[0];
+        const extraCard = this.#deck.draw();
+        if (extraCard) human.currentcard.push(extraCard);
+
+
+        ui.updateDeckCount(this.#deck.taille());
+        ui.renderPlayerHand(human.currentcard);
+
+        this.#players.forEach((p, i) => {
+            if (i === 0) return;
+            ui.updateCard(p.currentcard.map(c => c.type), i);
+        });
+
+
+        this.current_player = 0;
+    }
+
+    restart() {
+
+        this.#players.forEach(player => {
+            while (player.currentcard.length) player.discard(player.currentcard.pop());
+            while (player.equiped_card.length) player.equiped_card.pop();
+        });
+
+        const game = new Game(this.#players.length, this.difficulty);
+        game.start();
+    }
+
+
+
+    async nextTurn() {
+
+        if (this.#players[0].iseliminated) {
+            window.restartGame = () => {
+                const game = new Game(this.#players.length, this.difficulty);
+                game.start();
+            };
+            ui.afficherFin("Tu as été éliminé !");
+            return; // stop le tour si le joueur humain est éliminé
         }
-        
-        //check if someone has won
-        this.#players.forEach(element => {
-            if(element.points >= 3){
-                print("Player "+this.#players.indexOf(element)+" wins the game!"); //TODO: end the game with win
-                // TODO: restart or end the game
-                // TODO: make the player loose
+
+        const alive = this.#players.filter(p => !p.iseliminated);
+        if (this.#deck.taille() === 0 || alive.length <= 1) {
+
+
+            let max = -1;
+            let winner = null;
+            alive.forEach(p => {
+                const cardValue = p.currentcard[0]?.type ?? -1;
+                if (cardValue > max) {
+                    max = cardValue;
+                    winner = p;
+                }
+            });
+
+            if (winner) winner.points += 1;
+
+            const has_espionne = [];
+
+            this.#players.forEach(player => {
+                if (player.iseliminated) return;
+
+                for (let i = 0; i < player.equiped_card.length; i++) {
+                    if (
+                        player.equiped_card[i].type === 0 &&
+                        !has_espionne.includes(player)
+                    ) {
+                        has_espionne.push(player);
+                    }
+                }
+            });
+
+            if (has_espionne.length === 1) {
+                has_espionne[0].points += 1;
+            }
+
+            const winnerCard = winner.currentcard[0]; // carte du gagnant pour affichage
+            const cardName = winnerCard ? ui.nomCarte(winnerCard.type) : "aucune carte";
+
+            let message = "";
+            if (winner === this.#players[0]) {
+                message = `Vous gagnez la manche avec ${cardName} !`;
+            } else {
+                message = `${ui.nomJoueur(this.#players.indexOf(winner))} gagne la manche avec ${cardName} !`;
+            }
+
+
+            message += "<br><br><strong>Scores :</strong><br>";
+            this.#players.forEach((p, i) => {
+                message += `${ui.nomJoueur(i)} : ${p.points} point(s)<br>`;
+            });
+
+
+            ui.afficherFin(message);
+
+
+            window.restartGame = () => {
+                this.new_round();
+                this.start();
+            };
+
+            return;
+        }
+
+        // boucle pour trouver un joueur vivant
+        let currentPlayer = this.#players[this.current_player];
+        while (currentPlayer.iseliminated) {
+            this.current_player = (this.current_player + 1) % this.#players.length;
+            currentPlayer = this.#players[this.current_player];
+        }
+
+        ui_ia.AfficherJoueurActuel(this.current_player);
+        ui.log(`--- Tour de ${ui.nomJoueur(this.current_player)} ---`);
+
+        currentPlayer.draw();
+        ui.updateDeckCount(this.#deck.taille());
+        ui.log(`${ui.nomJoueur(this.current_player)} pioche une carte`);
+
+        //On enleve les cartes equipees du joueur humain
+        if (currentPlayer.equiped_card.some(c => c.type === 4)) {
+
+            if (this.current_player === 0) ui.retirerServanteHumain();
+            else ui.retirerServanteIA(this.current_player);
+        }
+        if (currentPlayer.iseliminated) {
+            if (this.current_player === 0) ui.retirerEspionneHumain();
+            else ui_ia.retirerEspionneIA(this.current_player);
+        }
+
+        // FONCTIONNEMENT POUR LES IA
+        if (currentPlayer instanceof IASimple || currentPlayer instanceof IADifficult) {
+            await wait(1000); // temps de réflexion IA necessaire parce que sinon ça passe trop vite, le joueur comprend pas ce qui se passe
+
+            const playedCard = currentPlayer.play();
+            ui.log(
+                `${ui.nomJoueur(this.current_player)} joue ${ui.nomCarte(playedCard.type)}`
+            );
+
+            if (!playedCard) {
+                console.warn("IA sans action possible, passe son tour");
+                this.current_player = (this.current_player + 1) % this.#players.length;
+                await this.nextTurn();
                 return;
             }
-            else {
-                this.new_round(); // TODO: start a new round
+
+            if (currentPlayer instanceof IASimple || currentPlayer instanceof IADifficult) {
+                ui.retirerServanteIA(this.current_player);
             }
-        });
 
-        
-    }
 
-    new_round(){
-        //reset players
-        this.#players.forEach(element => {
-            element.iseliminated = false;});
-        //reset deck
-        this.#deck = new deck();
-        //initial draw
-        this.#players.forEach(element => {
-            element.draw();
-        });
 
-    }
+            switch (playedCard.type) {
 
-    restart(){
-        //reset everything
-        this.#players = []
-        this.#deck = new deck();
-        this.#players.push(new player(this.#deck));
-        for(let i=1;i<num_players;i++){
-            if(difficulty == 0){
-                this.#players.push(new iasimple(this.#deck,this.discard_pile));
+                case 0:
+                    playedCard.activate(currentPlayer, null);
+                    ui.afficherEspionneIA(this.current_player);
+                    break;
+
+
+                case 4:
+                    playedCard.activate(currentPlayer, null);
+                    ui.afficherServanteIA(this.current_player);
+                    break;
+
+                case 2: {
+                    const target = currentPlayer.pretre(this.#players);
+                    if (target) {
+                        playedCard.activate(currentPlayer, target);
+                        await ui.afficherCartePretre(target.currentcard[0]);
+                        ui.log(`→ regarde la main de ${ui.nomJoueur(this.#players.indexOf(target))}`);
+                    }
+                    break;
+                }
+
+
+                case 3: {
+                    const target = currentPlayer.baron(this.#players);
+
+                    if (!target) {
+                        console.warn("Pas de cible disponible pour le Baron, tour passé");
+                        break;
+                    }
+
+                    const cardRestante = currentPlayer.currentcard.find(c => c !== playedCard);
+
+                    const cardCible = target.currentcard[0];
+
+                    // Vérifier que les deux cartes existent avant d'afficher le duel
+                    if (!cardRestante || !cardCible) {
+                        console.warn("Un des joueurs n'a pas de carte pour le Baron, on applique directement l'effet");
+                        playedCard.activate(currentPlayer, target);
+                    } else {
+
+                        await ui.afficherDuelBaron({
+                            joueurA: currentPlayer,
+                            carteA: cardRestante,
+                            joueurB: target,
+                            carteB: cardCible
+                        });
+
+
+                        playedCard.activate(currentPlayer, target);
+                    }
+
+                    break;
+                }
+
+                case 5: {
+                    const target = currentPlayer.prince(this.#players);
+                    if (target) {
+                        playedCard.activate(currentPlayer, target);
+                        ui.log(`→ force ${ui.nomJoueur(this.#players.indexOf(target))} à défausser`);
+                    }
+                    break;
+                }
+
+
+                case 7: {
+                    const target = currentPlayer.roi(this.#players);
+                    if (target) {
+                        playedCard.activate(currentPlayer, target);
+                        ui.log(`→ échange avec ${ui.nomJoueur(this.#players.indexOf(target))}`);
+                    }
+                    break;
+                }
+
+                case 1: {
+                    const [target, guess] = currentPlayer.garde(this.#players);
+                    if (target) {
+                        playedCard.activate(currentPlayer, target, guess);
+                        ui.log(`→ devine ${ui.nomCarte(guess)} sur ${ui.nomJoueur(this.#players.indexOf(target))}`);
+                    }
+                    break;
+                }
+
+
+                default:
+                    playedCard.activate(currentPlayer, null);
             }
-            else if(difficulty == 1){
-                this.#players.push(new iadifficult(this.#deck,this.discard_pile));
-            }
+
+            this.afterCardPlayed(playedCard);
+
+            await wait(500);
+
+            this.current_player = (this.current_player + 1) % this.#players.length;
+            await this.nextTurn();
         }
-        this.#players.forEach(element => {
-            element.draw();
+        // FONCTIONNEMENT JOUEUR HUAMIN
+        else {
+            ui.renderPlayerHand(currentPlayer.currentcard, async (selectedCard) => {
+
+                // GARDE
+                if (selectedCard.type === 1) {
+                    const target = await ui_ia.choisirCibleIA(this.#players);
+                    ui.log(`→ cible : ${ui.nomJoueur(this.#players.indexOf(target))}`);
+                    const guess = await ui_ia.choisirCarteGarde();
+                    ui.log(`→ devine : ${ui.nomCarte(guess)}`);
+
+
+                    selectedCard.activate(currentPlayer, target, guess);
+                    if (target.iseliminated) {
+                        ui.log(`💀 ${ui.nomJoueur(this.#players.indexOf(target))} est éliminé`);
+                    }
+                }
+                //PRETRE
+                else if (selectedCard.type === 2) {
+
+                    const target = await ui_ia.choisirCibleIA(this.#players);
+                    if (!target) return;
+
+                    //On enregistre la carte avant activation sinon ça plante à l'activation après affichage (c'est pareil pour le baron ..)
+                    const carteVue = target.currentcard[0];
+                    currentPlayer.discard(selectedCard);
+                    selectedCard.activate(currentPlayer, target);
+
+                    await ui.afficherCartePretre(carteVue);
+                    ui.log(
+                        `${ui.nomJoueur(this.current_player)} regarde la main de ${ui.nomJoueur(this.#players.indexOf(target))}`
+                    );
+
+
+                    ui.updateCard(currentPlayer.currentcard.map(c => c.type));
+                    ui.renderPlayerHand(currentPlayer.currentcard, async (selectedCard) => {
+
+                    });
+                }
+
+                // BARON
+                else if (selectedCard.type === 3) {
+                    const target = await ui_ia.choisirCibleIA(this.#players);
+
+                    // On enregistre les cartes avant activation sinon ça plante à l'activation après affichage
+                    const cardRestante = currentPlayer.currentcard.find(c => c !== selectedCard);
+                    const cardCible = target.currentcard[0]; // la carte de la cible
+
+
+                    await ui.afficherDuelBaron({
+                        joueurA: currentPlayer,
+                        carteA: cardRestante,
+                        joueurB: target,
+                        carteB: cardCible
+                    });
+
+
+                    selectedCard.activate(currentPlayer, target);
+                }
+
+                else if (selectedCard.type === 0) {
+                    ui.afficherEspionneHumain();
+                    selectedCard.activate(currentPlayer, null);
+                    ui.log(
+                        `${ui.nomJoueur(this.current_player)} pose une Espionne`
+                    );
+
+                }
+
+                // SERVANTE
+                else if (selectedCard.type === 4) {
+                    ui.afficherServanteHumain();
+                    selectedCard.activate(currentPlayer, null);
+                    ui.log(
+                        `${ui.nomJoueur(this.current_player)} se protège avec la Servante`
+                    );
+
+                }
+                //PRINCE
+                else if (selectedCard.type === 5) {
+                    const target = await ui_ia.choisirCiblePrince(this.#players, this.current_player);
+                    if (!target) return;
+
+                    ui.log(`${ui.nomJoueur(this.current_player)} joue le Prince sur ${ui.nomJoueur(this.#players.indexOf(target))}`);
+
+
+                    currentPlayer.discard(selectedCard); // la met dans la défausse
+                    currentPlayer.currentcard.splice(currentPlayer.currentcard.indexOf(selectedCard), 1);
+                    ui.updateDeckCount(this.#deck.taille());
+                    if (currentPlayer === this.#players[0]) ui.renderPlayerHand(currentPlayer.currentcard);
+
+
+                    selectedCard.activate(currentPlayer, target);
+
+
+                    if (target.currentcard.length > 0) {
+                        const defausse = target.currentcard.pop();
+                        if (defausse) {
+                            target.discard(defausse);
+                            ui.log(`${ui.nomJoueur(this.#players.indexOf(target))} défausse ${ui.nomCarte(defausse.type)}`);
+
+
+                            if (defausse.type === 9) {
+                                target.iseliminated = true;
+                                ui.log(`${ui.nomJoueur(this.#players.indexOf(target))} est éliminé !`);
+                            }
+                        }
+                    }
+
+
+                    if (!target.iseliminated) {
+                        const card = this.#deck.draw();
+                        if (card) {
+                            target.currentcard.push(card);
+                            if (target === this.#players[0]) ui.renderPlayerHand(target.currentcard);
+                            ui.updateDeckCount(this.#deck.taille());
+                        }
+                    }
+
+
+                    if (target !== currentPlayer) {
+                        await this.nextTurn();
+                    }
+                }
+
+
+                //CHANCELIER 
+                else if (selectedCard.type === 6) {
+
+                    currentPlayer.discard(selectedCard);
+                    ui.updateDeckCount(this.#deck.taille());
+                    ui.log(`${ui.nomJoueur(this.current_player)} joue le Chancelier`);
+
+
+                    const nbCartes = Math.min(2, this.#deck.taille());
+                    for (let i = 0; i < nbCartes; i++) {
+                        const card = currentPlayer.draw();
+                        if (card) ui.updateDeckCount(this.#deck.taille());
+                    }
+
+
+                    if (currentPlayer.currentcard.length > 1) {
+
+                        const cartesSousPioche = await ui.choisirChancelier(currentPlayer.currentcard);
+
+
+                        cartesSousPioche.forEach(c => {
+                            const index = currentPlayer.currentcard.indexOf(c);
+                            if (index !== -1) {
+                                currentPlayer.currentcard.splice(index, 1);
+                                currentPlayer.putback(c);
+                            }
+                        });
+
+                        ui.log(`Cartes remises sous la pioche dans l'ordre choisi`);
+                    }
+
+
+                    ui.renderPlayerHand(currentPlayer.currentcard, async (selectedCard) => {
+                        await this.nextTurn();
+                    });
+                }
+                //ROI
+                else if (selectedCard.type === 7) {
+                    currentPlayer.discard(selectedCard);
+                    ui.log(`${ui.nomJoueur(this.current_player)} joue le Roi`);
+
+                    const target = await ui_ia.choisirCibleIA(this.#players);
+
+                    if (!target) return;
+
+
+                    const playerCard = currentPlayer.currentcard[0];
+                    const targetCard = target.currentcard[0];
+
+                    currentPlayer.currentcard[0] = targetCard;
+                    target.currentcard[0] = playerCard;
+
+                    // Mise à jour UI
+                    ui.updateCard(currentPlayer.currentcard.map(c => c.type));
+                    ui.updateCard(target.currentcard.map(c => c.type), target.index);
+
+                    ui.log(`${ui.nomJoueur(this.current_player)} échange sa carte avec ${ui.nomJoueur(target.index)}`);
+                }
+
+
+
+                //PRINCESSE
+                else if (selectedCard.type === 9) {
+                    currentPlayer.discard(selectedCard);
+                    ui.log(`${ui.nomJoueur(this.current_player)} a défaussé la Princesse et est éliminé !`);
+                    currentPlayer.eliminated = true;
+                    ui.updateCard(currentPlayer.currentcard.map(c => c.type));
+                }
+
+
+
+                // AUTRES CARTES
+                else {
+                    selectedCard.activate(currentPlayer, null);
+                }
+
+                this.afterCardPlayed(selectedCard);
+
+                await wait(500);
+                this.current_player = (this.current_player + 1) % this.#players.length;
+
+                await this.nextTurn();
+            });
+
+        }
+    }
+
+    async start() {
+        ui.updateDeckCount(this.#deck.taille());
+        this.current_player = 0;
+        await this.nextTurn();
+    }
+
+    afterCardPlayed(card) {
+        const currentPlayer = this.#players[this.current_player];
+
+        if (this.current_player === 0) {
+            ui.renderPlayerHand(currentPlayer.currentcard, () => { });
+        }
+
+        ui.updateCard(currentPlayer.currentcard.map(c => c.type));
+
+        const lastCard = this.discard_pile.getlast();
+        if (lastCard) ui.playCard(lastCard);
+
+        ui_ia.AfficherJoueurMort(this.#players);
+    }
+
+
+
+
+}
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export { Game };
+
+window.game = new Game(5, 0);
+window.game.start();
+
+// BOUTON RESTART //marche pas encore parfaitement
+document.addEventListener("DOMContentLoaded", () => {
+    const restartBtn = document.querySelector("#restart-button button");
+
+    if (restartBtn) {
+        restartBtn.addEventListener("click", () => {
+            if (game) {
+                game.restart();
+            } else {
+                console.warn("Aucune instance de Game trouvée !");
+            }
         });
     }
+});
 
-    affichage_discard_last(){
-        //show last card in discard pile
-        return this.discard_pile.getlast().gettype();
-    }
-    current_player_chiffre(){
-        //return current player index
-        return this.current_player;
-    }
-
-    current_player_player(){
-        //return current player object
-        return this.#players[this.current_player];
-    }
-
-    nombre_de_cartes_dans_le_deck(){
-        //return number of cards in deck
-        return this.#deck.taille();
-    }
-
-}
-
-class discard_pile {
-    #cards = []
-    constructor(){
-        this.#cards = []
-    }
-    getlast(){
-        //return last card in discard pile
-        return this.#cards[this.#cards.length - 1];
-    }
-    add(card){
-        //add card to discard pile
-        this.#cards.push(card);
-    }
-}
-
-export {game,player,deck,card,discard_pile};

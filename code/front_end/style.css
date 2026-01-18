@@ -1,0 +1,76 @@
+:root {
+  --font-calligraphy: 'Pinyon Script', cursive;
+  --font-header: 'Cinzel', serif;
+  --font-body: 'Crimson Text', serif;
+
+  --gold: #DAA520;
+  --gold-soft: #F8E7A0;
+  --dark-bordeaux: #2b0000;
+}
+
+nav {
+  font-family: var(--font-body);
+  color: var(--gold);
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--dark-bordeaux);
+  background-image: url('attached_assets/generated_images/fond.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+p {
+  font-family: var(--font-body);
+  color: var(--dark-bordeaux);
+  text-shadow:
+    2px 2px 1 var(--gold-soft);
+}
+
+h1 {
+  font-family: var(--font-calligraphy);
+  color: var(--gold);
+  text-shadow:
+    2px 2px 0 var(--gold-soft),
+    0px 2px 0 var(--gold-soft),
+    2px 0px 0 var(--gold-soft);
+
+  font-weight: extrabold;
+
+}
+
+h2 {
+  font-family: var(--font-header);
+  color: var(--dark-bordeaux);
+
+}
+
+.card.back {
+  background: repeating-linear-gradient(45deg,
+      #222,
+      #222 10px,
+      #444 10px,
+      #444 20px);
+}
+
+.card.empty {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+}
+
+/* Utility if you need it */
+.golden-text {
+  color: var(--gold);
+}
+
+.cible-cliquable {
+    outline: 3px solid yellow;
+    cursor: pointer;
+}
+#overlay-chancelier-content {
+  background-color: white; /* ou rgba(255,255,255,1) */
+  pointer-events: auto; /* assure que les clics sont pris en compte */
+}

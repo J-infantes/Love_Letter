@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Jouer - Love Letter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:wght@400;700&family=Pinyon+Script&display=swap"
+    rel="stylesheet">
+</head>
+
+<body class="min-h-screen font-body text-white bg-cover bg-center"
+  style="background-image: url('attached_assets/generated_images/fond.png')">
+
+  <!-- NAV BAR -->
+  <nav
+    class="fixed top-6 left-1/2 transform -translate-x-1/2 max-w-3xl bg-gray-900 bg-opacity-80 rounded-2xl p-4 flex gap-6 shadow-lg z-50">
+    <a href="index.html" class="hover:text-rose-300">Accueil</a>
+    <a href="jouer.html" class="hover:text-rose-300 font-bold">Jouer</a>
+    <a href="regles.html" class="hover:text-rose-300">Règles</a>
+  </nav>
+
+  <div id="restart-button" class="flex justify-start m-8">
+    <button class="bg-gray-900 bg-opacity-80 text-white py-2 px-6 rounded-lg hover:scale-105 transition cursor-pointer">
+      Recommencer
+    </button>
+  </div>
+
+  <!-- MENU DIFFICULTÉ -->
+  <div id="difficulty-menu"
+    class="max-w-md mx-auto mt-8 bg-gray-800 bg-opacity-80 p-6 rounded-2xl flex flex-col gap-4 text-center">
+    <h2 class="text-xl font-bold mb-4 text-white">Choisis la difficulté de l'IA</h2>
+    <button class=" text-white-900 py-2 px-6 rounded-lg hover:scale-105 transition cursor-pointer"
+      data-difficulty="easy">Facile</button>
+    <button class=" text-white-900 py-2 px-6 rounded-lg hover:scale-105 transition cursor-pointer"
+      data-difficulty="hard">Difficile</button>
+  </div>
+
+
+  <!-- PLATEAU DE JEU -->
+  <div id="game-board" class="hidden max-w-5xl mx-auto mt-12 p-6 bg-parchment bg-cover bg-center rounded-2xl">
+
+
+    <!-- IA HAND -->
+    <div id="ai-hand" class="flex justify-center gap-3 mb-8">
+
+      <div class="bg-gray-900 bg-opacity-60 rounded-2xl ">
+        <p class=" h-12 w-32 object-scale-down text-center text-sm opacity-60 text-white" id="ia1">IA n°1</p>
+        <img src="attached_assets/icon/ia.png" alt="ia" class="w-20 h-20   shadow-md">
+      </div>
+
+      <div class="bg-gray-900 bg-opacity-60 rounded-2xl ">
+        <p class=" h-12 w-32 object-scale-down text-center text-sm opacity-60 text-white" id="ia2">IA n°2</p>
+        <img src="attached_assets/icon/ia.png" alt="ia" class="w-20 h-20   shadow-md">
+      </div>
+
+      <div class="bg-gray-900 bg-opacity-60 rounded-2xl">
+        <p class=" h-12 w-32 object-scale-down text-center text-sm opacity-60 text-white" id="ia3">IA n°3</p>
+        <img src="attached_assets/icon/ia.png" alt="ia" class="w-20 h-20   shadow-md">
+      </div>
+
+      <div class="bg-gray-900 bg-opacity-60 rounded-2xl">
+        <p class=" h-12 w-32 object-scale-down text-center text-sm opacity-60 text-white" id="ia4">IA n°4</p>
+        <img src="attached_assets/icon/ia.png" alt="ia" class="w-20 h-20   shadow-md">
+      </div>
+
+
+
+
+    </div>
+
+    <!-- CENTER AREA (Deck + Discard) -->
+    <div class="flex justify-center items-center gap-10 mb-8">
+      <!-- Deck -->
+      <div id="deck" class="card cursor-pointer transform transition hover:scale-105 relative group">
+        <img src="attached_assets/cartes/fond.jpg" alt="Deck"
+          class="w-24 h-36 rounded-lg border-2 border-white-400 shadow-md">
+
+        <!-- Tooltip du nombre de cartes -->
+        <span id="deck-count" class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 
+          bg-gray-800 text-white text-sm rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          0 cartes restantes
+        </span>
+      </div>
+
+
+
+      <!-- Discard -->
+      <div id="discard-pile" class="card empty flex items-center justify-center text-sm opacity-60">
+        Défausse
+      </div>
+    </div>
+
+    <!-- PLAYER HAND -->
+    <div id="player-equiped" class="flex justify-center gap-3 mb-8">
+    </div>
+    <div id="player-hand" class="flex justify-center gap-3 mb-8">
+      <!-- Cartes du joueur générées par JS -->
+    </div>
+    <!-- OVERLAY GARDE -->
+    <div id="overlay-garde" class="hidden fixed inset-0 z-50 bg-black/60 flex justify-center items-center">
+
+      <div class="p-4 rounded-lg flex flex-wrap gap-2 max-w-md">
+        <button class="carte-garde" data-type="0">Espionne</button>
+        <button class="carte-garde" data-type="2">Prêtre</button>
+        <button class="carte-garde" data-type="3">Baron</button>
+        <button class="carte-garde" data-type="4">Servante</button>
+        <button class="carte-garde" data-type="5">Prince</button>
+        <button class="carte-garde" data-type="6">Chancelier</button>
+        <button class="carte-garde" data-type="7">Roi</button>
+        <button class="carte-garde" data-type="8">Comtesse</button>
+        <button class="carte-garde" data-type="9">Princesse</button>
+      </div>
+    </div>
+    <!-- OVERLAY PRETRE -->
+    <div id="overlay-pretre" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-xl text-center">
+        <h2 class="text-xl font-bold mb-4">Carte de l'adversaire</h2>
+        <p id="pretre-nom-carte" class="mb-4"></p>
+        <img id="pretre-img-carte" class="mx-auto mb-4 w-32">
+        <button id="close-pretre" class="px-4 py-2 bg-blue-500 text-white rounded">
+          OK
+        </button>
+      </div>
+    </div>
+    <!-- OVERLAY BARON -->
+    <div id="overlay-baron" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+
+      <div class="bg-white p-6 rounded-xl text-black flex flex-col gap-4">
+
+        <div class="flex gap-4">
+          <div id="blocA" class="flex flex-col items-center">
+            <img id="carteA" class="w-24 h-36">
+            <p id="nomA"></p>
+          </div>
+
+          <div id="blocB" class="flex flex-col items-center">
+            <img id="carteB" class="w-24 h-36">
+            <p id="nomB"></p>
+          </div>
+        </div>
+
+        <button id="btn-continue" class="bg-red-600 text-white px-4 py-2 rounded cursor-pointer">
+          Continuer
+        </button>
+
+      </div>
+    </div>
+    <!-- Overlay pour le Chancelier -->
+    <div id="overlay-chancelier"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div id="overlay-chancelier-content" class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <!-- Le contenu sera rempli par JS -->
+      </div>
+      <div id="overlay-prince"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"></div>
+
+    </div>
+    <!-- OVERLAY FIN DE PARTIE -->
+    <div id="overlay-fin" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div id="overlay-fin-content" class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full"></div>
+    </div>
+
+
+    <!-- LOG -->
+    <div id="game-log" class="overflow-auto bg-white/10 p-4 rounded-xl w-full h-40 overflow-y-auto text-sm">
+      <p class="opacity-80">Journal de partie…</p>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT JS -->
+  <script type="module">
+    import {Game} from './script/game.js';
+
+    const menu = document.getElementById('difficulty-menu');
+    const board = document.getElementById('game-board');
+
+    document.querySelectorAll('#difficulty-menu button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const difficulty = btn.dataset.difficulty === "easy" ? 0 : 1;
+        menu.classList.add('hidden');
+        board.classList.remove('hidden');
+
+        const game = new Game(5, difficulty); // 1 humain + 4 IA
+        game.start();
+      });
+    });
+  </script>
+
+
+
+</body>
+
+</html>

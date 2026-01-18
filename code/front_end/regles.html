@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Règles</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:wght@400;700&family=Pinyon+Script&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <nav
+    class="fixed top-6 left-1/2 transform -translate-x-1/2 max-w-3xl bg-gray-900 bg-opacity-80 rounded-2xl p-4 flex gap-6 shadow-lg">
+
+    <a href="index.html" class="hover:text-rose-300">Accueil</a>
+    <a href="jouer.html" class="hover:text-rose-300">Jouer</a>
+    <a href="regles.html" class="hover:text-rose-300">Règles</a>
+  </nav>
+
+
+
+  <div class="bg-cover bg-center bg-no-repeat rounded-2xl p-8 max-w-3xl mx-auto mt-40"
+    style="background-image: url('attached_assets/generated_images/parchemin.png')">
+    <h2 className="font-header text-velvet border-b border-velvet/30 pb-2 mb-6">But du Jeu</h2>
+    <p class=" mb-6">
+      Dans <strong>Love Letter</strong>, Le jeu comporte 10 personnages représentés sur une vingtaine de cartes (les
+      personnages se répètent au moins deux fois).
+      Chaque personnage possède un pouvoir décrit sur sa carte, et une valeur qui prendra effet à la fin de la partie.
+      Chaque joueur tient en main une carte personnage, qu'il garde secrète.
+    </p>
+    <h2 className="font-header text-velvet border-b border-velvet/30 pb-2 mb-6">Déroulement</h2>
+    <p className="mb-6">
+      En jouant une carte, il doit réaliser le pouvoir inscrit sur la carte, et celui-ci aura une incidence sur les
+      autres joueurs.
+      Les tours des joueurs s'enchainent ainsi jusqu'à ce qu'il n'y ait plus de cartes dans la pioche, ou que tous les
+      joueurs, à l'exception d'un, aient perdu.
+      Le gagnant de la partie sera soit le seul survivant, soit celui avec la carte de valeur la plus haute.
+      Le gagnant obtient un jeton faveur, et une nouvelle partie recommence jusqu'à ce qu'un joueur obtienne trois
+      jetons faveur, il gagne alors le jeu.
+    </p>
+
+    <h2 className="font-header text-velvet border-b border-velvet/30 pb-2 mb-6">Les Cartes</h2>
+    <div class="grid grid-cols-2 gap-6">
+      <!-- Carte 0 -->
+      <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+        <img src="attached_assets/cartes/0.jpg" alt="Carte 0" class="m-2 ">
+
+      </div>
+      <!-- Carte 1 -->
+      <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+        <img src="attached_assets/cartes/1.jpg" alt="Carte 1" class="mx-auto mb-2">
+
+      </div>
+      <!-- Carte 2 -->
+      <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+        <div class="flex justify-center items-center"> <!--a finir div pour reduire la taille des images-->
+          <img src="attached_assets/cartes/2.jpg" alt="Carte 2" class="mx-auto mb-2">
+
+        </div>
+        <!-- Carte 3 -->
+        <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+          <img src="attached_assets/cartes/3.jpg" alt="Carte 3" class="mx-auto mb-2">
+
+        </div>
+        <!-- Carte 4 -->
+        <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+          <img src="attached_assets/cartes/4.jpg" alt="Carte 4" class="mx-auto mb-2">
+
+        </div>
+        <!-- Carte 5 -->
+        <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+          <img src="attached_assets/cartes/5.jpg" alt="Carte 5" class="mx-auto mb-2">
+
+        </div>
+        <!-- Carte 6 -->
+        <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+          <img src="attached_assets/cartes/6.jpg" alt="Carte 6" class="mx-auto mb-2">
+
+        </div>
+        <!-- Carte 7 -->
+        <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+          <img src="attached_assets/cartes/7.jpg" alt="Carte 7" class="mx-auto mb-2">
+
+        </div>
+        <!-- Carte 8 -->
+        <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+          <img src="attached_assets/cartes/8.jpg" alt="Carte 8" class="mx-auto mb-2">
+
+        </div>
+        <!-- Carte 9 -->
+        <div class="bg-gray-700 rounded-lg p-4 text-white text-center">
+          <img src="attached_assets/cartes/9.jpg" alt="Carte 8" class="mx-auto mb-2">
+
+        </div>
+      </div>
+
+
+    </div>
+
+</body>
+
+</html>

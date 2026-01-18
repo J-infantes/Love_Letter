@@ -15,7 +15,7 @@ Le gagnant obtient un jeton faveur, et une nouvelle partie recommence jusqu'à c
 
 #
   
-Maëlle Mevel s'occupera du design HTML/CSS.  
+Maëlle Mevel s'occupera du design HTML/CSS et de l'affichage du jeu.  
 Maxime Ducandas s'occupera du déroulement de la partie.  
 Julia Infantes s'occupera de la programmation des IA joueurs.
 
@@ -27,7 +27,8 @@ Seulement du javascript pour le backend.
 #
 
 Lien vers une démonstration de notre jeu:  
-
+https://replit.com/@maellemevel/Javascript-LoveLetter?v=1 
+-> cliquer sur ce lien, et lancer la preview pour pouvoir jouer
 #
 
 Les bugs connus non résolus à ce jour sont:  
